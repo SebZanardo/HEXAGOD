@@ -1,0 +1,12 @@
+Theme: Temperature
+Idea: Connect different temperature biomes on a hexagonal grid to score points
+
+Priority Todo List:
+- Create a hexagonal grid system
+- Camera system
+- Tile system
+- Scoring system
+- Leaderboard system
+- Graphics
+- Audio
+- Menus
