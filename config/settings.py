@@ -16,7 +16,7 @@ WINDOW_SETUP = {
     "vsync": 1,
 }
 
-CAPTION = "My New Pygame Project"
+CAPTION = "Pygame Community Spring Jam 2024"
 FPS = 60
 
 
