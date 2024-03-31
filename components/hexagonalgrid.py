@@ -1,7 +1,10 @@
+from __future__ import annotations
+from typing import Optional
 import math
-from dataclasses import dataclass
 from enum import Enum, auto
+from dataclasses import dataclass, astuple
 import pygame
+
 
 # This script uses flat-top oriented hexagons and a cube coordinate system
 # https://www.redblobgames.com/grids/hexagons/
@@ -23,11 +26,14 @@ class Biome(Enum):
     SNOW = auto()
 
 
-@dataclass(frozen=True)
+@dataclass
 class HexPosition:
     q: int
     r: int
     s: int
+
+    def __add__(self, other: HexPosition) -> HexPosition:
+        return HexPosition(self.q + other.q, self.r + other.r, self.s + other.s)
 
 
 @dataclass
@@ -36,19 +42,62 @@ class HexTile:
     edges: list[int]
 
 
+HEXAGONAL_NEIGHBOURS = (
+    HexPosition(0, -1, +1),
+    HexPosition(+1, -1, 0),
+    HexPosition(+1, 0, -1),
+    HexPosition(0, +1, -1),
+    HexPosition(-1, +1, 0),
+    HexPosition(-1, 0, +1),
+)
+
+
 class HexagonalGrid:
     def __init__(self) -> None:
         self.grid = {}
-        # Store open grid cells
+        self.open = set()
 
-    def add_tile(self, hex: HexTile):
-        self.grid[hex.position] = hex
+    def write_tile(self, hex: HexTile) -> None:
+        self.grid[astuple(hex.position)] = hex
+
+    def get_tile(self, hex_position: HexPosition) -> Optional[HexTile]:
+        return self.grid.get(astuple(hex_position))
+
+    def add_tile(self, hex: HexTile) -> None:
+        self.write_tile(hex)
+
+        self.open.discard(astuple(hex.position))
+
+        for neighbour in HEXAGONAL_NEIGHBOURS:
+            adj_hex_position = hex.position + neighbour
+            self.open.add(astuple(adj_hex_position))
+
+    def get_placed_tiles(self) -> list[HexTile]:
+        return self.grid.values()
+
+    def get_open_tiles(self) -> list[HexTile]:
+        return self.open
+
+    def is_open(self, hex_position: HexPosition) -> bool:
+        return astuple(hex_position) in self.open
 
 
 def hex_corner(cx: float, cy: float, i: int) -> tuple[float, float]:
     angle_deg = 60 * i
     angle_rad = math.pi / 180 * angle_deg
     return (cx + SIZE * math.cos(angle_rad), cy + SIZE * math.sin(angle_rad))
+
+
+def get_screen_hex_corners(
+    cx: float, cy: float, offset_x: float, offset_y: float
+) -> list[tuple[float, float]]:
+    corners = []
+    for i in range(6):
+        x, y = hex_corner(cx, cy, i)
+        x += offset_x
+        y += offset_y
+        corners.append((x, y))
+    return corners
 
 
 def hex_to_pixel(hex: HexPosition) -> tuple[float, float]:
@@ -87,17 +136,20 @@ def render_hex(
     surface: pygame.Surface, hex: HexTile, offset_x: float, offset_y: float
 ) -> None:
     centre = hex_to_pixel(hex.position)
-
-    corners = []
-
-    for c in range(6):
-        x, y = hex_corner(*centre, c)
-        x += offset_x
-        y += offset_y
-        corners.append((x, y))
+    corners = get_screen_hex_corners(*centre, offset_x, offset_y)
 
     pygame.draw.polygon(surface, (0, 255, 0), corners)
-    for c in range(6):
-        pygame.draw.line(surface, (0, 150, 0), corners[c - 1], corners[c], 2)
-    for c in range(6):
-        pygame.draw.circle(surface, (0, 0, 0), corners[c], 2)
+
+    for i in range(6):
+        pygame.draw.line(surface, (0, 150, 0), corners[i - 1], corners[i], 2)
+    for i in range(6):
+        pygame.draw.circle(surface, (0, 0, 0), corners[i], 2)
+
+
+def render_open_hex(
+    surface: pygame.Surface, hex_position: HexPosition, offset_x: float, offset_y: float
+) -> None:
+    centre = hex_to_pixel(hex_position)
+    corners = get_screen_hex_corners(*centre, offset_x, offset_y)
+
+    pygame.draw.polygon(surface, (100, 200, 200), corners)
