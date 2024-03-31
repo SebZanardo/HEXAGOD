@@ -4,17 +4,37 @@ from utilities.typehints import ActionBuffer, MouseBuffer
 from config.input import InputState, MouseButton, Action
 from baseclasses.scenemanager import Scene, SceneManager
 import scenes.mainmenu
-from utilities.spriteloading import slice_sheet
-from components.animationplayer import AnimationPlayer
+from config.settings import WINDOW_CENTRE
+from components.hexagonalgrid import (
+    HexPosition,
+    HexTile,
+    HexagonalGrid,
+    hex_to_pixel,
+    pixel_to_hex,
+    round_to_nearest_hex,
+    render_hex,
+)
+from utilities.math import PYTHAGORAS_CONSTANT
 
 
 class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
+        self.font = pygame.freetype.Font("assets/joystix.otf", 10)
+        self.font.antialiased = False
 
-        # To test animation system, and because it looks cool :))
-        debug_spin_frames = slice_sheet("assets/impossible_spin.png", 64, 64)
-        self.debug_animation = AnimationPlayer("spin", debug_spin_frames, 0.05)
+        self.hex_grid = HexagonalGrid()
+        self.hex_grid.add_tile(HexTile(HexPosition(0, 0, 0), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(0, -1, 1), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(1, -1, 0), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(1, 0, -1), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(0, 1, -1), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(-1, 0, 1), [i for i in range(6)]))
+        self.hex_grid.add_tile(HexTile(HexPosition(-1, 1, 0), [i for i in range(6)]))
+
+        self.hovered_tile = HexPosition(0, 0, 0)
+        self.offset_x, self.offset_y = WINDOW_CENTRE
+        self.move_speed = 5
 
     def handle_input(
         self, action_buffer: ActionBuffer, mouse_buffer: MouseBuffer
@@ -24,10 +44,41 @@ class Game(Scene):
             or mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
         ):
             self.scene_manager.switch_scene(scenes.mainmenu.MainMenu)
+        input_x, input_y = 0, 0
+        if action_buffer[Action.LEFT][InputState.HELD]:
+            input_x += 1
+        if action_buffer[Action.RIGHT][InputState.HELD]:
+            input_x -= 1
+        if action_buffer[Action.UP][InputState.HELD]:
+            input_y += 1
+        if action_buffer[Action.DOWN][InputState.HELD]:
+            input_y -= 1
+
+        if input_x != 0 and input_y != 0:
+            input_x /= PYTHAGORAS_CONSTANT
+            input_y /= PYTHAGORAS_CONSTANT
+
+        self.offset_x += input_x * self.move_speed
+        self.offset_y += input_y * self.move_speed
 
     def update(self, dt: float) -> None:
-        self.debug_animation.update(dt)
+        mouse_position = pygame.mouse.get_pos()
+        offset_mouse_position = (
+            mouse_position[0] - self.offset_x,
+            mouse_position[1] - self.offset_y,
+        )
+        hex = pixel_to_hex(*offset_mouse_position)
+        self.hovered_tile = round_to_nearest_hex(hex)
 
     def render(self, surface: pygame.Surface) -> None:
         surface.fill((0, 255, 255))
-        surface.blit(self.debug_animation.get_frame(), (288, 148))
+
+        for hex in self.hex_grid.grid.values():
+            render_hex(surface, hex, self.offset_x, self.offset_y)
+
+        x, y = hex_to_pixel(self.hovered_tile)
+        x += self.offset_x
+        y += self.offset_y
+        pygame.draw.circle(surface, (255, 255, 255), (x, y), 8)
+
+        self.font.render_to(surface, (0, 20), f"{self.hovered_tile}")

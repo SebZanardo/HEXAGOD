@@ -1,3 +1,9 @@
+import math
+
+
+PYTHAGORAS_CONSTANT = math.sqrt(2)
+
+
 def clamp(value: float, minimum: float, maximum: float) -> float:
     return min(max(value, minimum), maximum)
 
