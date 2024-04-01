@@ -12,9 +12,7 @@ from components.camera import Camera
 # https://www.redblobgames.com/grids/hexagons/
 
 
-MIN_SIZE = 8
-MAX_SIZE = 64
-SIZE = 32
+SIZE = 8  # The size in pixels when camera zoom = 1
 WIDTH = 2 * SIZE
 HEIGHT = math.sqrt(3) * SIZE
 
@@ -138,50 +136,44 @@ def round_to_nearest_hex(hex: HexPosition) -> HexPosition:
 
 
 def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
-    centre = camera.world_to_screen(*hex_to_world(hex.position))
+    centre = hex_to_world(hex.position)
     corners = get_hex_corners(*centre)
+    screen_centre = camera.world_to_screen(*centre)
+    screen_corners = [camera.world_to_screen(*c) for c in corners]
 
     for i in range(6):
         colour = BIOME_COLOUR_MAP[hex.edges[i]]
-        sector = [corners[i - 1], corners[i], centre]
+        sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
     for i in range(6):
-        pygame.draw.line(surface, (0, 0, 0), corners[i - 1], corners[i], SIZE // 8)
+        pygame.draw.line(
+            surface,
+            (0, 0, 0),
+            screen_corners[i - 1],
+            screen_corners[i],
+            camera.zoom_int,
+        )
 
-    for i in range(6):
-        pygame.draw.circle(surface, (0, 0, 0), corners[i], SIZE // 8)
+    # for i in range(6):
+    #     pygame.draw.circle(surface, (0, 0, 0), screen_corners[i], camera.zoom_int)
 
 
 def render_open_hex(
     surface: pygame.Surface, camera: Camera, hex_position: HexPosition
 ) -> None:
-    centre = camera.world_to_screen(*hex_to_world(hex_position))
+    centre = hex_to_world(hex_position)
     corners = get_hex_corners(*centre)
+    screen_corners = [camera.world_to_screen(*c) for c in corners]
 
-    pygame.draw.polygon(surface, (102, 195, 255), corners)
+    pygame.draw.polygon(surface, (102, 195, 255), screen_corners)
 
 
 def render_highlighted_hex(
     surface: pygame.Surface, camera: Camera, hex_position: HexPosition
 ) -> None:
-    centre = camera.world_to_screen(*hex_to_world(hex_position))
+    centre = hex_to_world(hex_position)
     corners = get_hex_corners(*centre)
+    screen_corners = [camera.world_to_screen(*c) for c in corners]
 
-    pygame.draw.polygon(surface, (255, 255, 255), corners, SIZE // 8)
-
-
-# HACK: Before I implement zooming properly (also broken)
-def zoom_in() -> None:
-    global SIZE, WIDTH, HEIGHT
-    SIZE = max(MIN_SIZE, SIZE - 1)
-    WIDTH = 2 * SIZE
-    HEIGHT = math.sqrt(3) * SIZE
-
-
-# HACK: Before I implement zooming properly (also broken)
-def zoom_out() -> None:
-    global SIZE, WIDTH, HEIGHT
-    SIZE = min(MAX_SIZE, SIZE + 1)
-    WIDTH = 2 * SIZE
-    HEIGHT = math.sqrt(3) * SIZE
+    pygame.draw.polygon(surface, (255, 255, 255), screen_corners, camera.zoom_int)
