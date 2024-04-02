@@ -4,6 +4,9 @@ from typing import Optional
 from components.hexagonalgrid import Biome, HexTile, HexPosition, HexSides
 
 
+STARTING_BIOME = Biome.WATER
+
+
 class TileManager:
     def __init__(self, preview_length: int, remaining_tiles: int) -> None:
         self.remaining = remaining_tiles
@@ -11,7 +14,7 @@ class TileManager:
         self.held = None
 
         self.preview_length = preview_length
-        self.preview = [pick_random_edges() for i in range(self.preview_length)]
+        self.preview = [pick_random_starting_tile() for i in range(self.preview_length)]
         self.get_next_tile()
 
     def get_remaining(self) -> int:
@@ -51,7 +54,7 @@ class TileManager:
         self.remaining -= 1
 
         if self.remaining >= self.preview_length:
-            self.preview.append(pick_random_edges())
+            self.preview.append(pick_random_tile())
         else:
             self.preview.append(None)
 
@@ -64,13 +67,55 @@ class TileManager:
 
         for i in range(self.preview_length):
             if self.preview[i] is None and self.remaining - i + 1 > 0:
-                self.preview[i] = pick_random_edges()
+                self.preview[i] = pick_random_tile()
 
     def rotate_active_tile(self) -> None:
         last = self.active.pop()
         self.active.insert(0, last)
 
 
-# TODO: Make more balanced random piece system
-def pick_random_edges() -> HexSides:
-    return [random.choice(tuple(Biome)) for i in range(6)]
+# Probability for number of unique biomes on a tile
+UNIQUE_BIOME_PROBABILITY = [0.1, 0.6, 0.2, 0.05, 0.03, 0.02]
+
+
+def pick_random_tile() -> HexSides:
+    unique_biomes = pick_number_of_unique_biomes()
+    picked_biomes = pick_unique_biomes(unique_biomes)
+    return random_tile(picked_biomes)
+
+
+# Ensures that starting biome is picked
+def pick_random_starting_tile() -> HexSides:
+    unique_biomes = pick_number_of_unique_biomes()
+    picked_biomes = [STARTING_BIOME] + pick_unique_biomes(unique_biomes - 1)
+    return random_tile(picked_biomes)
+
+
+def random_tile(picked_biomes: list[Biome]) -> HexSides:
+    sides = [None] * 6
+    open = [i for i in range(6)]
+    random.shuffle(open)
+
+    # Ensure every unique biome is picked once
+    for b in picked_biomes:
+        sides[open.pop()] = b
+
+    while open:
+        sides[open.pop()] = random.choice(picked_biomes)
+
+    return sides
+
+
+def pick_number_of_unique_biomes() -> int:
+    r = random.random()
+    for i, p in enumerate(UNIQUE_BIOME_PROBABILITY):
+        if r <= p:
+            return i + 1
+        r -= p
+    return 1  # Should never be hit
+
+
+def pick_unique_biomes(n: int) -> list[Biome]:
+    available = list(Biome)
+    random.shuffle(available)
+    return available[: min(len(available), abs(n))]

@@ -8,7 +8,6 @@ from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
     SIZE,
     PREVIEW_MULTIPLIER,
-    Biome,
     HexPosition,
     HexTile,
     HexagonalGrid,
@@ -19,7 +18,7 @@ from components.hexagonalgrid import (
     render_highlighted_hex,
     render_preview_hex,
 )
-from components.tilemanager import TileManager
+from components.tilemanager import TileManager, STARTING_BIOME
 from components.camera import Camera
 from components.ui import render_centered_text
 
@@ -38,7 +37,7 @@ class Game(Scene):
         self.font.antialiased = False
 
         self.hex_grid = HexagonalGrid()
-        self.hex_grid.add_tile(HexTile(HexPosition(0, 0, 0), [Biome.GRASS] * 6))
+        self.hex_grid.add_tile(HexTile(HexPosition(0, 0, 0), [STARTING_BIOME] * 6))
         self.tile_manager = TileManager(5, 50)
 
         self.camera = Camera(0, 0, *WINDOW_CENTRE, 4, *(1, 16), 200, 10)
