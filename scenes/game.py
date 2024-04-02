@@ -57,9 +57,6 @@ class Game(Scene):
         if action_buffer[Action.ZOOM_OUT][InputState.HELD]:
             self.zoom_input -= 1
 
-        if action_buffer[Action.HOLD][InputState.PRESSED]:
-            self.tile_manager.swap_held_tile()
-
         self.input_x, self.input_y = 0, 0
         if action_buffer[Action.LEFT][InputState.HELD]:
             self.input_x -= 1
@@ -70,6 +67,8 @@ class Game(Scene):
         if action_buffer[Action.DOWN][InputState.HELD]:
             self.input_y += 1
 
+        self.hold = action_buffer[Action.HOLD][InputState.PRESSED]
+        self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
         self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
@@ -81,8 +80,13 @@ class Game(Scene):
         hex = world_to_hex(*offset_mouse_position)
         self.hovered_tile = round_to_nearest_hex(hex)
 
-        if self.try_place and self.hex_grid.is_open(self.hovered_tile):
+        if self.hold:
+            self.tile_manager.swap_held_tile()
 
+        if self.rotate:
+            self.tile_manager.rotate_active_tile()
+
+        if self.try_place and self.hex_grid.is_open(self.hovered_tile):
             tile = self.tile_manager.create_active_tile(self.hovered_tile)
             if tile is not None:
                 self.hex_grid.add_tile(tile)

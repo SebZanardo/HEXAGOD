@@ -66,6 +66,10 @@ class TileManager:
             if self.preview[i] is None and self.remaining - i + 1 > 0:
                 self.preview[i] = pick_random_edges()
 
+    def rotate_active_tile(self) -> None:
+        last = self.active.pop()
+        self.active.insert(0, last)
+
 
 # TODO: Make more balanced random piece system
 def pick_random_edges() -> HexSides:
