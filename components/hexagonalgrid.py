@@ -16,6 +16,8 @@ SIZE = 8  # The size in pixels when camera zoom = 1
 WIDTH = 2 * SIZE
 HEIGHT = math.sqrt(3) * SIZE
 
+PREVIEW_MULTIPLIER = 3
+
 
 class Biome(Enum):
     WATER = auto()
@@ -36,6 +38,9 @@ BIOME_COLOUR_MAP = {
 }
 
 
+HexSides = tuple[Biome, Biome, Biome, Biome, Biome, Biome]
+
+
 @dataclass
 class HexPosition:
     q: int
@@ -49,7 +54,7 @@ class HexPosition:
 @dataclass
 class HexTile:
     position: HexPosition
-    edges: list[int]
+    sides: HexSides
 
 
 HEXAGONAL_NEIGHBOURS = (
@@ -84,7 +89,7 @@ class HexagonalGrid:
                 self.open.add(astuple(adj_hex_position))
 
     def get_placed_tiles(self) -> list[HexTile]:
-        return self.grid.values()
+        return list(self.grid.values())
 
     def get_open_tiles(self) -> list[HexTile]:
         return self.open
@@ -142,7 +147,7 @@ def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
     for i in range(6):
-        colour = BIOME_COLOUR_MAP[hex.edges[i]]
+        colour = BIOME_COLOUR_MAP[hex.sides[i]]
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
@@ -177,3 +182,27 @@ def render_highlighted_hex(
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
     pygame.draw.polygon(surface, (255, 255, 255), screen_corners, camera.zoom_int)
+
+
+def render_preview_hex(
+    surface: pygame.Surface, cx: int, cy: int, sides: HexSides
+) -> None:
+    corners = get_hex_corners(0, 0)
+    screen_corners = [
+        (c[0] * PREVIEW_MULTIPLIER + cx, c[1] * PREVIEW_MULTIPLIER + cy)
+        for c in corners
+    ]
+
+    for i in range(6):
+        colour = BIOME_COLOUR_MAP[sides[i]]
+        sector = [screen_corners[i - 1], screen_corners[i], (cx, cy)]
+        pygame.draw.polygon(surface, colour, sector)
+
+    for i in range(6):
+        pygame.draw.line(
+            surface,
+            (0, 0, 0),
+            screen_corners[i - 1],
+            screen_corners[i],
+            PREVIEW_MULTIPLIER,
+        )
