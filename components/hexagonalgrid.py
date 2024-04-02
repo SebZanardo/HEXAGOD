@@ -20,7 +20,7 @@ PREVIEW_MULTIPLIER = 3
 
 
 class Biome(Enum):
-    WATER = auto()
+    SWAMP = auto()
     GRASS = auto()
     SAND = auto()
     FOREST = auto()
@@ -29,13 +29,19 @@ class Biome(Enum):
 
 
 BIOME_COLOUR_MAP = {
-    Biome.WATER: (83, 216, 251),
+    Biome.SWAMP: (191, 148, 228),
     Biome.GRASS: (87, 167, 115),
     Biome.SAND: (255, 225, 86),
     Biome.FOREST: (11, 83, 81),
     Biome.MOUNTAIN: (99, 89, 92),
     Biome.SNOW: (208, 229, 227),
 }
+
+
+OUTLINE_COLOUR = (0, 0, 0)
+HOVER_COLOUR = (255, 255, 255)
+HIGHLIGHT_COLOUR = (255, 255, 0)
+OPEN_COLOUR = (20, 150, 170)
 
 
 HexSides = tuple[Biome, Biome, Biome, Biome, Biome, Biome]
@@ -55,15 +61,16 @@ class HexPosition:
 class HexTile:
     position: HexPosition
     sides: HexSides
+    matching_sides: int = 0
 
 
 HEXAGONAL_NEIGHBOURS = (
-    HexPosition(0, -1, +1),
     HexPosition(+1, -1, 0),
     HexPosition(+1, 0, -1),
     HexPosition(0, +1, -1),
     HexPosition(-1, +1, 0),
     HexPosition(-1, 0, +1),
+    HexPosition(0, -1, +1),
 )
 
 
@@ -151,17 +158,10 @@ def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
-    for i in range(6):
-        pygame.draw.line(
-            surface,
-            (0, 0, 0),
-            screen_corners[i - 1],
-            screen_corners[i],
-            camera.zoom_int,
-        )
+    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, camera.zoom_int)
 
     # for i in range(6):
-    #     pygame.draw.circle(surface, (0, 0, 0), screen_corners[i], camera.zoom_int)
+    #     pygame.draw.circle(surface, OUTLINE_COLOUR, screen_corners[i], camera.zoom_int)
 
 
 def render_open_hex(
@@ -171,17 +171,24 @@ def render_open_hex(
     corners = get_hex_corners(*centre)
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
-    pygame.draw.polygon(surface, (102, 195, 255), screen_corners)
+    pygame.draw.polygon(surface, OPEN_COLOUR, screen_corners)
 
 
 def render_highlighted_hex(
-    surface: pygame.Surface, camera: Camera, hex_position: HexPosition
+    surface: pygame.Surface,
+    camera: Camera,
+    hex_position: HexPosition,
+    sides: list[bool],
 ) -> None:
     centre = hex_to_world(hex_position)
     corners = get_hex_corners(*centre)
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
-    pygame.draw.polygon(surface, (255, 255, 255), screen_corners, camera.zoom_int)
+    for i in range(6):
+        colour = HIGHLIGHT_COLOUR if sides[i] else HOVER_COLOUR
+        pygame.draw.line(
+            surface, colour, screen_corners[i - 1], screen_corners[i], camera.zoom_int
+        )
 
 
 def render_preview_hex(
@@ -198,11 +205,4 @@ def render_preview_hex(
         sector = [screen_corners[i - 1], screen_corners[i], (cx, cy)]
         pygame.draw.polygon(surface, colour, sector)
 
-    for i in range(6):
-        pygame.draw.line(
-            surface,
-            (0, 0, 0),
-            screen_corners[i - 1],
-            screen_corners[i],
-            PREVIEW_MULTIPLIER,
-        )
+    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, PREVIEW_MULTIPLIER)

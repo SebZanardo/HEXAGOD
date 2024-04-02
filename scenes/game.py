@@ -8,6 +8,7 @@ from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
     SIZE,
     PREVIEW_MULTIPLIER,
+    HEXAGONAL_NEIGHBOURS,
     HexPosition,
     HexTile,
     HexagonalGrid,
@@ -43,6 +44,8 @@ class Game(Scene):
         self.camera = Camera(0, 0, *WINDOW_CENTRE, 4, *(1, 16), 200, 10)
 
         self.hovered_tile = HexPosition(0, 0, 0)
+
+        self.score = 0
 
     def handle_input(
         self, action_buffer: ActionBuffer, mouse_buffer: MouseBuffer
@@ -89,10 +92,32 @@ class Game(Scene):
             tile = self.tile_manager.create_active_tile(self.hovered_tile)
             if tile is not None:
                 self.hex_grid.add_tile(tile)
+
+                # Scoring
+                for i, neighbour in enumerate(HEXAGONAL_NEIGHBOURS):
+                    position = self.hovered_tile + neighbour
+                    adj_tile = self.hex_grid.get_tile(position)
+
+                    if adj_tile is None:
+                        continue
+
+                    # If same biomes are touching
+                    if tile.sides[i] == adj_tile.sides[(i + 3) % 6]:
+                        self.score += 10
+                        tile.matching_sides += 1
+                        adj_tile.matching_sides += 1
+
+                        if tile.matching_sides == 6:
+                            self.score += 100
+                            self.tile_manager.add_to_remaining(3)
+                        if adj_tile.matching_sides == 6:
+                            self.score += 100
+                            self.tile_manager.add_to_remaining(3)
+
                 self.tile_manager.get_next_tile()
 
     def render(self, surface: pygame.Surface) -> None:
-        surface.fill((0, 255, 255))
+        surface.fill((83, 216, 251))
 
         for hex_position_tuple in self.hex_grid.get_open_tiles():
             render_open_hex(surface, self.camera, HexPosition(*hex_position_tuple))
@@ -104,7 +129,20 @@ class Game(Scene):
         for hex in self.hex_grid.get_placed_tiles():
             render_hex(surface, self.camera, hex)
 
-        render_highlighted_hex(surface, self.camera, self.hovered_tile)
+        matching_sides = [False] * 6
+        if self.hex_grid.is_open(self.hovered_tile) and self.tile_manager.get_active() is not None:
+            for i, neighbour in enumerate(HEXAGONAL_NEIGHBOURS):
+                position = self.hovered_tile + neighbour
+                adj_tile = self.hex_grid.get_tile(position)
+
+                if adj_tile is None:
+                    continue
+
+                # If same biomes are touching
+                if self.tile_manager.get_active()[i] == adj_tile.sides[(i + 3) % 6]:
+                    matching_sides[i] = True
+
+        render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
 
         for i, preview in enumerate(self.tile_manager.get_preview()):
             if preview is None:
@@ -123,3 +161,4 @@ class Game(Scene):
         )
 
         self.font.render_to(surface, (0, 20), f"{self.hovered_tile}")
+        self.font.render_to(surface, (0, 30), f"SCORE: {self.score}")

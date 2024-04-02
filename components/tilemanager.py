@@ -4,7 +4,7 @@ from typing import Optional
 from components.hexagonalgrid import Biome, HexTile, HexPosition, HexSides
 
 
-STARTING_BIOME = Biome.WATER
+STARTING_BIOME = Biome.GRASS
 
 
 class TileManager:
@@ -66,7 +66,7 @@ class TileManager:
             return
 
         for i in range(self.preview_length):
-            if self.preview[i] is None and self.remaining - i + 1 > 0:
+            if self.preview[i] is None and self.remaining - i > 0:
                 self.preview[i] = pick_random_tile()
 
     def rotate_active_tile(self) -> None:
