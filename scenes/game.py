@@ -1,3 +1,4 @@
+import math
 import pygame
 
 from utilities.typehints import ActionBuffer, MouseBuffer
@@ -7,7 +8,8 @@ import scenes.mainmenu
 from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
     SIZE,
-    PREVIEW_MULTIPLIER,
+    WIDTH,
+    HEIGHT,
     HEXAGONAL_NEIGHBOURS,
     HexPosition,
     HexTile,
@@ -24,11 +26,13 @@ from components.camera import Camera
 from components.ui import render_centered_text
 
 
-PREVIEW_OFFSET = SIZE * PREVIEW_MULTIPLIER * 2 + SIZE
-PREVIEW_X = WINDOW_WIDTH - PREVIEW_OFFSET
+PREVIEW_OFFSET = HEIGHT * 1.5
+PREVIEW_X = WINDOW_WIDTH - SIZE * 1.5
 PREVIEW_Y = 20
-HELD_X = PREVIEW_OFFSET
-HELD_Y = WINDOW_HEIGHT - PREVIEW_OFFSET
+HELD_X = WIDTH
+HELD_Y = WINDOW_HEIGHT - WIDTH
+
+MOVE_RADIUS = min(WINDOW_CENTRE) - 10
 
 
 class Game(Scene):
@@ -39,9 +43,9 @@ class Game(Scene):
 
         self.hex_grid = HexagonalGrid()
         self.hex_grid.add_tile(HexTile(HexPosition(0, 0, 0), [STARTING_BIOME] * 6))
-        self.tile_manager = TileManager(5, 50)
+        self.tile_manager = TileManager(3, 50)
 
-        self.camera = Camera(0, 0, *WINDOW_CENTRE, 4, *(1, 16), 200, 10)
+        self.camera = Camera(0, 0, *WINDOW_CENTRE)
 
         self.hovered_tile = HexPosition(0, 0, 0)
 
@@ -53,34 +57,26 @@ class Game(Scene):
         if action_buffer[Action.START][InputState.PRESSED]:
             self.scene_manager.switch_scene(scenes.mainmenu.MainMenu)
 
-        self.zoom_input = 0
-        if action_buffer[Action.ZOOM_IN][InputState.HELD]:
-            self.zoom_input += 1
-        if action_buffer[Action.ZOOM_OUT][InputState.HELD]:
-            self.zoom_input -= 1
-
         self.input_x, self.input_y = 0, 0
-        if action_buffer[Action.LEFT][InputState.HELD]:
-            self.input_x -= 1
-        if action_buffer[Action.RIGHT][InputState.HELD]:
-            self.input_x += 1
-        if action_buffer[Action.UP][InputState.HELD]:
-            self.input_y -= 1
-        if action_buffer[Action.DOWN][InputState.HELD]:
-            self.input_y += 1
+        mx, my = pygame.mouse.get_pos()
+        dx = WINDOW_CENTRE[0] - mx
+        dy = WINDOW_CENTRE[1] - my
+        d = math.sqrt(dx**2 + dy**2)
+
+        if d > MOVE_RADIUS:
+            self.input_x = -dx / d
+            self.input_y = -dy / d
+        else:
+            offset_mouse_position = self.camera.screen_to_world(mx, my)
+            hex = world_to_hex(*offset_mouse_position)
+            self.hovered_tile = round_to_nearest_hex(hex)
 
         self.hold = action_buffer[Action.HOLD][InputState.PRESSED]
-        self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
-        self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
+        self.rotate = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
+        self.try_place = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
         self.camera.move(dt, self.input_x, self.input_y)
-        self.camera.change_zoom(dt, self.zoom_input)
-
-        mouse_position = pygame.mouse.get_pos()
-        offset_mouse_position = self.camera.screen_to_world(*mouse_position)
-        hex = world_to_hex(*offset_mouse_position)
-        self.hovered_tile = round_to_nearest_hex(hex)
 
         if self.hold:
             self.tile_manager.swap_held_tile()
@@ -130,7 +126,10 @@ class Game(Scene):
             render_hex(surface, self.camera, hex)
 
         matching_sides = [False] * 6
-        if self.hex_grid.is_open(self.hovered_tile) and self.tile_manager.get_active() is not None:
+        if (
+            self.hex_grid.is_open(self.hovered_tile)
+            and self.tile_manager.get_active() is not None
+        ):
             for i, neighbour in enumerate(HEXAGONAL_NEIGHBOURS):
                 position = self.hovered_tile + neighbour
                 adj_tile = self.hex_grid.get_tile(position)
@@ -159,6 +158,8 @@ class Game(Scene):
             f"{self.tile_manager.get_remaining()}",
             (PREVIEW_X, PREVIEW_Y),
         )
+
+        pygame.draw.circle(surface, (255, 255, 255), WINDOW_CENTRE, MOVE_RADIUS, 5)
 
         self.font.render_to(surface, (0, 20), f"{self.hovered_tile}")
         self.font.render_to(surface, (0, 30), f"SCORE: {self.score}")

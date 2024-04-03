@@ -12,11 +12,11 @@ from components.camera import Camera
 # https://www.redblobgames.com/grids/hexagons/
 
 
-SIZE = 8  # The size in pixels when camera zoom = 1
+SIZE = 32
 WIDTH = 2 * SIZE
 HEIGHT = math.sqrt(3) * SIZE
 
-PREVIEW_MULTIPLIER = 3
+OUTLINE_WIDTH = 2
 
 
 class Biome(Enum):
@@ -158,10 +158,10 @@ def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
-    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, camera.zoom_int)
+    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, OUTLINE_WIDTH)
 
     # for i in range(6):
-    #     pygame.draw.circle(surface, OUTLINE_COLOUR, screen_corners[i], camera.zoom_int)
+    #     pygame.draw.circle(surface, OUTLINE_COLOUR, screen_corners[i], OUTLINE_WIDTH)
 
 
 def render_open_hex(
@@ -187,22 +187,18 @@ def render_highlighted_hex(
     for i in range(6):
         colour = HIGHLIGHT_COLOUR if sides[i] else HOVER_COLOUR
         pygame.draw.line(
-            surface, colour, screen_corners[i - 1], screen_corners[i], camera.zoom_int
+            surface, colour, screen_corners[i - 1], screen_corners[i], OUTLINE_WIDTH
         )
 
 
 def render_preview_hex(
     surface: pygame.Surface, cx: int, cy: int, sides: HexSides
 ) -> None:
-    corners = get_hex_corners(0, 0)
-    screen_corners = [
-        (c[0] * PREVIEW_MULTIPLIER + cx, c[1] * PREVIEW_MULTIPLIER + cy)
-        for c in corners
-    ]
+    screen_corners = get_hex_corners(cx, cy)
 
     for i in range(6):
         colour = BIOME_COLOUR_MAP[sides[i]]
         sector = [screen_corners[i - 1], screen_corners[i], (cx, cy)]
         pygame.draw.polygon(surface, colour, sector)
 
-    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, PREVIEW_MULTIPLIER)
+    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, OUTLINE_WIDTH)

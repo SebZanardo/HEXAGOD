@@ -21,13 +21,9 @@ FPS = 60
 
 
 action_mappings = {
-    Action.LEFT: [pygame.K_a, pygame.K_LEFT],
-    Action.RIGHT: [pygame.K_d, pygame.K_RIGHT],
-    Action.UP: [pygame.K_w, pygame.K_UP],
-    Action.DOWN: [pygame.K_s, pygame.K_DOWN],
-    Action.ZOOM_IN: [pygame.K_z, pygame.K_SLASH, pygame.K_q],
-    Action.ZOOM_OUT: [pygame.K_x, pygame.K_PERIOD, pygame.K_e],
-    Action.HOLD: [pygame.K_c, pygame.K_COMMA, pygame.K_f],
+    Action.HOLD: [pygame.K_c],
+    Action.UNDO: [pygame.K_x],
     Action.SELECT: [pygame.K_LSHIFT, pygame.K_RSHIFT],
     Action.START: [pygame.K_RETURN, pygame.K_SPACE],
+    Action.PAUSE: [pygame.K_ESCAPE],
 }
