@@ -1,4 +1,4 @@
-MAX_MOVE_SPEED = 200
+MAX_MOVE_SPEED = 360
 
 
 class Camera:
@@ -11,6 +11,8 @@ class Camera:
     def move(self, dt: float, dx: int, dy: int) -> None:
         self.x += dx * MAX_MOVE_SPEED * dt
         self.y += dy * MAX_MOVE_SPEED * dt
+        self.x = int(self.x)
+        self.y = int(self.y)
 
     def world_to_screen(self, x: float, y: float) -> tuple[int, int]:
         return int(x - self.x + self.offset_x), int(y - self.y + self.offset_y)

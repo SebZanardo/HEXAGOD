@@ -69,6 +69,7 @@ class HexTile:
     position: HexPosition
     sides: HexSides
     sides_touching: HexSides
+    sector_sprites: Optional[list[tuple[int]]]
     matching_sides: int = 0
 
 
@@ -155,7 +156,16 @@ def round_to_nearest_hex(hex: HexPosition) -> HexPosition:
     return HexPosition(q, r, s)
 
 
-def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
+RENDER_OFFSETS_EVEN = ((0, -5), (-5, 5), (5, 5))
+RENDER_OFFSETS_ODD = ((0, 5), (-5, -5), (5, -5))
+
+
+def render_hex(
+    surface: pygame.Surface,
+    camera: Camera,
+    hex: HexTile,
+    hex_sprites: list[pygame.Surface],
+) -> None:
     centre = hex_to_world(hex.position)
     corners = get_hex_corners(*centre)
     screen_centre = camera.world_to_screen(*centre)
@@ -165,6 +175,25 @@ def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
         colour = BIOME_COLOUR_MAP[hex.sides[i]]
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
+
+        if hex.sector_sprites is None:
+            continue
+
+        middle_x, middle_y = 0, 0
+        for p in sector:
+            middle_x += p[0]
+            middle_y += p[1]
+        middle_x /= len(sector)
+        middle_y /= len(sector)
+
+        for p in range(3):
+            if hex.sector_sprites[i][p] is None:
+                continue
+            offset = RENDER_OFFSETS_EVEN[p] if i % 2 == 0 else RENDER_OFFSETS_ODD[p]
+            surface.blit(
+                hex_sprites[hex.sector_sprites[i][p]],
+                (middle_x - 8 + offset[0], middle_y - 8 + offset[1]),
+            )
 
     for i in range(6):
         if hex.sides_touching[i] is not None:

@@ -1,5 +1,7 @@
 import math
+import random
 import pygame
+from typing import Optional
 
 from utilities.typehints import ActionBuffer, MouseBuffer
 from config.input import InputState, MouseButton, Action
@@ -7,11 +9,12 @@ from baseclasses.scenemanager import Scene, SceneManager
 import scenes.mainmenu
 from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
-    WIDTH,
-    HEIGHT,
+    SIZE,
     HEXAGONAL_NEIGHBOURS,
+    Biome,
     HexPosition,
     HexTile,
+    HexSides,
     HexagonalGrid,
     world_to_hex,
     round_to_nearest_hex,
@@ -23,17 +26,18 @@ from components.hexagonalgrid import (
 from components.tilemanager import TileManager, STARTING_BIOME
 from components.camera import Camera
 from components.ui import render_centered_text
+from utilities.spriteloading import slice_sheet
 
 
-PREVIEW_OFFSET = HEIGHT * 1.5
-PREVIEW_X = WINDOW_WIDTH - 40
-PREVIEW_Y = 20
+PREVIEW_OFFSET = SIZE * 2
+PREVIEW_X = WINDOW_WIDTH - SIZE
+PREVIEW_Y = SIZE / 2
 
-HELD_X = 40
+HELD_X = SIZE
 HELD_Y = WINDOW_CENTRE[1]
 
 MOVE_X = WINDOW_CENTRE[0] - PREVIEW_OFFSET
-MOVE_Y = WINDOW_CENTRE[1] - 20
+MOVE_Y = WINDOW_CENTRE[1] - SIZE / 2
 
 VIEWPORT_RECT = (
     WINDOW_CENTRE[0] - MOVE_X,
@@ -46,19 +50,32 @@ VIEWPORT_RECT = (
 class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
+
         self.font = pygame.freetype.Font("assets/joystix.otf", 10)
         self.font.antialiased = False
+        self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 16, 16)
+        self.BIOME_SPRITE_MAP = {
+            Biome.SWAMP: [0],
+            Biome.GRASS: [1],
+            Biome.SAND: [2],
+            Biome.FOREST: [3],
+            Biome.MOUNTAIN: [4],
+            Biome.SNOW: [5],
+        }
 
         self.hex_grid = HexagonalGrid()
-        self.hex_grid.add_tile(
-            HexTile(HexPosition(0, 0, 0), [STARTING_BIOME] * 6, [None] * 6)
+        start_hex = HexTile(
+            HexPosition(0, 0, 0), [STARTING_BIOME] * 6, [None] * 6, None
         )
-        self.tile_manager = TileManager(3, 50)
+        start_hex.sector_sprites = generate_hex_art(
+            start_hex.sides, self.BIOME_SPRITE_MAP
+        )
+        self.hex_grid.add_tile(start_hex)
 
+        self.tile_manager = TileManager(5, 50)
         self.camera = Camera(0, 0, *WINDOW_CENTRE)
 
         self.hovered_tile = HexPosition(0, 0, 0)
-
         self.score = 0
 
     def handle_input(
@@ -97,6 +114,10 @@ class Game(Scene):
         if self.try_place and self.hex_grid.is_open(self.hovered_tile):
             tile = self.tile_manager.create_active_tile(self.hovered_tile)
             if tile is not None:
+                tile.sector_sprites = generate_hex_art(
+                    tile.sides, self.BIOME_SPRITE_MAP
+                )
+
                 self.hex_grid.add_tile(tile)
 
                 # Scoring
@@ -132,10 +153,10 @@ class Game(Scene):
 
         active_tile = self.tile_manager.create_active_tile(self.hovered_tile)
         if active_tile is not None:
-            render_hex(surface, self.camera, active_tile)
+            render_hex(surface, self.camera, active_tile, self.BIOME_SPRITES)
 
         for hex in self.hex_grid.get_placed_tiles():
-            render_hex(surface, self.camera, hex)
+            render_hex(surface, self.camera, hex, self.BIOME_SPRITES)
 
         matching_sides = [False] * 6
         if (
@@ -202,6 +223,24 @@ class Game(Scene):
             f"{self.hovered_tile}",
             (WINDOW_CENTRE[0], WINDOW_HEIGHT - 10),
         )
+
         render_centered_text(
             surface, self.font, f"{self.score}", (WINDOW_CENTRE[0], 10)
         )
+
+
+def generate_hex_art(
+    hex_sides: HexSides, biome_sprite_map: dict[Biome, list[int]]
+) -> list[list[Optional[int]]]:
+    # Generate art for placed tile
+    sector_sprites = []
+    for biome in hex_sides:
+        count = random.randint(1, 3)
+        sprites = [None] * 3
+        spots = [0, 1, 2]
+        random.shuffle(spots)
+        for i in range(count):
+            spot = spots.pop()
+            sprites[spot] = random.choice(biome_sprite_map[biome])
+        sector_sprites.append(sprites)
+    return sector_sprites

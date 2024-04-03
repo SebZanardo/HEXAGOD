@@ -10,7 +10,7 @@ WINDOW_CENTRE = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
 
 WINDOW_SETUP = {
     "size": WINDOW_SIZE,
-    "flags": pygame.SCALED | pygame.RESIZABLE | pygame.FULLSCREEN,
+    "flags": pygame.SCALED | pygame.RESIZABLE,
     "depth": 0,
     "display": 0,
     "vsync": 1,
@@ -21,7 +21,7 @@ FPS = 60
 
 
 action_mappings = {
-    Action.HOLD: [pygame.K_c],
+    Action.HOLD: [pygame.K_f],
     Action.UNDO: [pygame.K_x],
     Action.SELECT: [pygame.K_LSHIFT, pygame.K_RSHIFT],
     Action.START: [pygame.K_RETURN, pygame.K_SPACE],

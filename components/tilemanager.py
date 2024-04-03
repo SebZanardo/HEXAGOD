@@ -18,7 +18,10 @@ class TileManager:
         self.get_next_tile()
 
     def get_remaining(self) -> int:
-        return self.remaining
+        if self.held is None:
+            return self.remaining
+        else:
+            return self.remaining + 1
 
     def get_active(self) -> Optional[HexSides]:
         return self.active
@@ -33,7 +36,7 @@ class TileManager:
         if self.active is None:
             return None
 
-        return HexTile(hex_position, self.active, [None] * 6)
+        return HexTile(hex_position, self.active, [None] * 6, None)
 
     def swap_held_tile(self) -> None:
         if self.held is not None:
