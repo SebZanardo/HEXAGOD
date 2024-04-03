@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import Optional
 import pygame
 
 from utilities.decorators import singleton
@@ -29,10 +30,14 @@ class SceneManager:
     def __init__(self, starting_scene: Scene) -> None:
         self.switch_scene(starting_scene)
 
-    def switch_scene(self, new_scene: Scene) -> None:
-        self.scene = new_scene(self)
+    def switch_scene(self, new_scene: Optional[Scene]) -> None:
+        if new_scene is None:
+            self.scene = None
+            print("Closing Program")
+        else:
+            self.scene = new_scene(self)
+            print(f"Switched to {new_scene.__name__} Scene")
         self.switched = True
-        print(f"Switched to {new_scene.__name__} Scene")
 
     def handle_input(self, input_buffer: InputBuffer) -> None:
         if self.switched:

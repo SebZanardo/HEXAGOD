@@ -25,5 +25,5 @@ action_mappings = {
     Action.UNDO: [pygame.K_x],
     Action.SELECT: [pygame.K_LSHIFT, pygame.K_RSHIFT],
     Action.START: [pygame.K_RETURN, pygame.K_SPACE],
-    Action.PAUSE: [pygame.K_ESCAPE],
+    Action.BACK: [pygame.K_ESCAPE],
 }

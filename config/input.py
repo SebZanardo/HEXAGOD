@@ -18,4 +18,4 @@ class Action(Enum):
     UNDO = auto()
     SELECT = auto()
     START = auto()
-    PAUSE = auto()
+    BACK = auto()

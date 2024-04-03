@@ -96,12 +96,11 @@ class Core:
         return action_buffer, mouse_buffer
 
     def check_for_quit(self) -> None:
+        if self.scene_manager.scene is None:
+            self.terminate()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.terminate()
-
-            # For quick development
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.terminate()
 
     def terminate(self) -> None:

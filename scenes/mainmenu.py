@@ -18,6 +18,8 @@ class MainMenu(Scene):
             or mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
         ):
             self.scene_manager.switch_scene(scenes.game.Game)
+        if action_buffer[Action.BACK][InputState.PRESSED]:
+            self.scene_manager.switch_scene(None)
 
     def update(self, dt: float) -> None:
         pass

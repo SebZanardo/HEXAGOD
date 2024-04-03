@@ -54,7 +54,7 @@ class Game(Scene):
     def handle_input(
         self, action_buffer: ActionBuffer, mouse_buffer: MouseBuffer
     ) -> None:
-        if action_buffer[Action.START][InputState.PRESSED]:
+        if action_buffer[Action.BACK][InputState.PRESSED]:
             self.scene_manager.switch_scene(scenes.mainmenu.MainMenu)
 
         self.input_x, self.input_y = 0, 0
