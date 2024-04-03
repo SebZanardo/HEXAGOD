@@ -6,7 +6,7 @@ from utilities.typehints import InputBuffer
 from baseclasses.scenemanager import SceneManager
 from config.settings import WINDOW_SETUP, FPS, CAPTION, action_mappings
 from config.input import InputState, MouseButton, Action
-from scenes.mainmenu import MainMenu
+from scenes.game import Game
 
 
 @singleton
@@ -26,7 +26,7 @@ class Core:
     }
 
     def __init__(self) -> None:
-        self.scene_manager = SceneManager(MainMenu)
+        self.scene_manager = SceneManager(Game)
         self.debug_font = pygame.freetype.Font("assets/joystix.otf", 10)
         self.debug_font.antialiased = False
         self.debug_font.fgcolor = (255, 255, 255)
@@ -47,10 +47,10 @@ class Core:
             self.scene_manager.render(self.window)
 
             # For easy performance testing
-            self.debug_font.render_to(
-                self.window, (0, 0), f"FPS {self.clock.get_fps():.0f}"
-            )
-            self.debug_font.render_to(self.window, (0, 10), f"DT {dt}")
+            # self.debug_font.render_to(
+            #     self.window, (0, 0), f"FPS {self.clock.get_fps():.0f}"
+            # )
+            # self.debug_font.render_to(self.window, (0, 10), f"DT {dt}")
 
             pygame.display.flip()
 

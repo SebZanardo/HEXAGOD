@@ -1,20 +1,17 @@
 import math
-import random
 import pygame
-from typing import Optional
 
 from utilities.typehints import ActionBuffer, MouseBuffer
 from config.input import InputState, MouseButton, Action
 from baseclasses.scenemanager import Scene, SceneManager
-import scenes.mainmenu
 from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
     SIZE,
     HEXAGONAL_NEIGHBOURS,
+    OPEN_COLOUR,
     Biome,
     HexPosition,
     HexTile,
-    HexSides,
     HexagonalGrid,
     world_to_hex,
     round_to_nearest_hex,
@@ -22,6 +19,7 @@ from components.hexagonalgrid import (
     render_open_hex,
     render_highlighted_hex,
     render_preview_hex,
+    generate_hex_art,
 )
 from components.tilemanager import TileManager, STARTING_BIOME
 from components.camera import Camera
@@ -37,14 +35,7 @@ HELD_X = SIZE
 HELD_Y = WINDOW_CENTRE[1]
 
 MOVE_X = WINDOW_CENTRE[0] - PREVIEW_OFFSET
-MOVE_Y = WINDOW_CENTRE[1] - SIZE / 2
-
-VIEWPORT_RECT = (
-    WINDOW_CENTRE[0] - MOVE_X,
-    WINDOW_CENTRE[1] - MOVE_Y,
-    MOVE_X * 2,
-    MOVE_Y * 2,
-)
+MOVE_Y = WINDOW_CENTRE[1] - SIZE
 
 
 class Game(Scene):
@@ -55,12 +46,12 @@ class Game(Scene):
         self.font.antialiased = False
         self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 16, 16)
         self.BIOME_SPRITE_MAP = {
-            Biome.SWAMP: [0],
-            Biome.GRASS: [1],
-            Biome.SAND: [2],
-            Biome.FOREST: [3],
-            Biome.MOUNTAIN: [4],
-            Biome.SNOW: [5],
+            Biome.SWAMP: [0, 0, 6],
+            Biome.GRASS: [1, 1, 7],
+            Biome.SAND: [2, 2, 8],
+            Biome.FOREST: [3, 3, 9],
+            Biome.MOUNTAIN: [4, 4, 10],
+            Biome.SNOW: [5, 5, 11],
         }
 
         self.hex_grid = HexagonalGrid()
@@ -82,7 +73,9 @@ class Game(Scene):
         self, action_buffer: ActionBuffer, mouse_buffer: MouseBuffer
     ) -> None:
         if action_buffer[Action.BACK][InputState.PRESSED]:
-            self.scene_manager.switch_scene(scenes.mainmenu.MainMenu)
+            self.scene_manager.switch_scene(None)
+        if action_buffer[Action.RESTART][InputState.PRESSED]:
+            self.scene_manager.switch_scene(Game)
 
         self.input_x, self.input_y = 0, 0
         mx, my = pygame.mouse.get_pos()
@@ -176,20 +169,19 @@ class Game(Scene):
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
 
-        pygame.draw.rect(surface, (200, 200, 200), VIEWPORT_RECT, 8)
         pygame.draw.rect(
             surface,
-            (255, 255, 255),
+            OPEN_COLOUR,
             ((0, 0), (WINDOW_WIDTH, WINDOW_CENTRE[1] - MOVE_Y)),
         )
         pygame.draw.rect(
             surface,
-            (255, 255, 255),
+            OPEN_COLOUR,
             ((0, 0), (WINDOW_CENTRE[0] - MOVE_X, WINDOW_HEIGHT)),
         )
         pygame.draw.rect(
             surface,
-            (255, 255, 255),
+            OPEN_COLOUR,
             (
                 (WINDOW_CENTRE[0] + MOVE_X, 0),
                 (WINDOW_CENTRE[0] - MOVE_X, WINDOW_HEIGHT),
@@ -197,7 +189,7 @@ class Game(Scene):
         )
         pygame.draw.rect(
             surface,
-            (255, 255, 255),
+            OPEN_COLOUR,
             ((0, WINDOW_CENTRE[1] + MOVE_Y), (WINDOW_WIDTH, WINDOW_CENTRE[1] - MOVE_Y)),
         )
 
@@ -209,6 +201,8 @@ class Game(Scene):
         held_tile = self.tile_manager.get_held()
         if held_tile is not None:
             render_preview_hex(surface, HELD_X, HELD_Y, held_tile)
+
+        render_centered_text(surface, self.font, "HELD", (HELD_X, HELD_Y - SIZE - 16))
 
         render_centered_text(
             surface,
@@ -227,20 +221,3 @@ class Game(Scene):
         render_centered_text(
             surface, self.font, f"{self.score}", (WINDOW_CENTRE[0], 10)
         )
-
-
-def generate_hex_art(
-    hex_sides: HexSides, biome_sprite_map: dict[Biome, list[int]]
-) -> list[list[Optional[int]]]:
-    # Generate art for placed tile
-    sector_sprites = []
-    for biome in hex_sides:
-        count = random.randint(1, 3)
-        sprites = [None] * 3
-        spots = [0, 1, 2]
-        random.shuffle(spots)
-        for i in range(count):
-            spot = spots.pop()
-            sprites[spot] = random.choice(biome_sprite_map[biome])
-        sector_sprites.append(sprites)
-    return sector_sprites

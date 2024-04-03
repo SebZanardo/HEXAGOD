@@ -22,8 +22,6 @@ FPS = 60
 
 action_mappings = {
     Action.HOLD: [pygame.K_f],
-    Action.UNDO: [pygame.K_x],
-    Action.SELECT: [pygame.K_LSHIFT, pygame.K_RSHIFT],
-    Action.START: [pygame.K_RETURN, pygame.K_SPACE],
+    Action.RESTART: [pygame.K_r],
     Action.BACK: [pygame.K_ESCAPE],
 }

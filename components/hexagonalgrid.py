@@ -3,6 +3,7 @@ from typing import Optional
 import math
 from enum import Enum, auto
 from dataclasses import dataclass, astuple
+import random
 import pygame
 
 from components.camera import Camera
@@ -12,11 +13,14 @@ from components.camera import Camera
 # https://www.redblobgames.com/grids/hexagons/
 
 
-SIZE = 32
+SIZE = 26
 WIDTH = 2 * SIZE
 HEIGHT = math.sqrt(3) * SIZE
 
-OUTLINE_WIDTH = 2
+OUTLINE_WIDTH = 1
+
+RENDER_OFFSETS_EVEN = ((0, -7), (-5, 2), (5, 2))
+RENDER_OFFSETS_ODD = ((0, 5), (-5, -3), (5, -3))
 
 
 class Biome(Enum):
@@ -38,7 +42,7 @@ BIOME_COLOUR_MAP = {
 }
 
 
-OUTLINE_COLOUR = (0, 0, 0)
+OUTLINE_COLOUR = (50, 30, 50)
 HOVER_COLOUR = (255, 255, 255)
 HIGHLIGHT_COLOUR = (255, 255, 0)
 OPEN_COLOUR = (20, 150, 170)
@@ -156,10 +160,6 @@ def round_to_nearest_hex(hex: HexPosition) -> HexPosition:
     return HexPosition(q, r, s)
 
 
-RENDER_OFFSETS_EVEN = ((0, -5), (-5, 5), (5, 5))
-RENDER_OFFSETS_ODD = ((0, 5), (-5, -5), (5, -5))
-
-
 def render_hex(
     surface: pygame.Surface,
     camera: Camera,
@@ -199,7 +199,11 @@ def render_hex(
         if hex.sides_touching[i] is not None:
             continue
         pygame.draw.line(
-            surface, (0, 0, 0), screen_corners[i - 1], screen_corners[i], OUTLINE_WIDTH
+            surface,
+            OUTLINE_COLOUR,
+            screen_corners[i - 1],
+            screen_corners[i],
+            OUTLINE_WIDTH,
         )
 
 
@@ -241,3 +245,20 @@ def render_preview_hex(
         pygame.draw.polygon(surface, colour, sector)
 
     pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, OUTLINE_WIDTH)
+
+
+def generate_hex_art(
+    hex_sides: HexSides, biome_sprite_map: dict[Biome, list[int]]
+) -> list[list[Optional[int]]]:
+    # Generate art for placed tile
+    sector_sprites = []
+    for biome in hex_sides:
+        count = random.randint(1, 3)
+        sprites = [None] * 3
+        spots = [0, 1, 2]
+        random.shuffle(spots)
+        for i in range(count):
+            spot = spots.pop()
+            sprites[spot] = random.choice(biome_sprite_map[biome])
+        sector_sprites.append(sprites)
+    return sector_sprites
