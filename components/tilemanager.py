@@ -33,7 +33,7 @@ class TileManager:
         if self.active is None:
             return None
 
-        return HexTile(hex_position, self.active)
+        return HexTile(hex_position, self.active, [None] * 6)
 
     def swap_held_tile(self) -> None:
         if self.held is not None:

@@ -7,7 +7,6 @@ from baseclasses.scenemanager import Scene, SceneManager
 import scenes.mainmenu
 from config.settings import WINDOW_CENTRE, WINDOW_WIDTH, WINDOW_HEIGHT
 from components.hexagonalgrid import (
-    SIZE,
     WIDTH,
     HEIGHT,
     HEXAGONAL_NEIGHBOURS,
@@ -27,12 +26,21 @@ from components.ui import render_centered_text
 
 
 PREVIEW_OFFSET = HEIGHT * 1.5
-PREVIEW_X = WINDOW_WIDTH - SIZE * 1.5
+PREVIEW_X = WINDOW_WIDTH - 40
 PREVIEW_Y = 20
-HELD_X = WIDTH
-HELD_Y = WINDOW_HEIGHT - WIDTH
 
-MOVE_RADIUS = min(WINDOW_CENTRE) - 10
+HELD_X = 40
+HELD_Y = WINDOW_CENTRE[1]
+
+MOVE_X = WINDOW_CENTRE[0] - PREVIEW_OFFSET
+MOVE_Y = WINDOW_CENTRE[1] - 20
+
+VIEWPORT_RECT = (
+    WINDOW_CENTRE[0] - MOVE_X,
+    WINDOW_CENTRE[1] - MOVE_Y,
+    MOVE_X * 2,
+    MOVE_Y * 2,
+)
 
 
 class Game(Scene):
@@ -42,7 +50,9 @@ class Game(Scene):
         self.font.antialiased = False
 
         self.hex_grid = HexagonalGrid()
-        self.hex_grid.add_tile(HexTile(HexPosition(0, 0, 0), [STARTING_BIOME] * 6))
+        self.hex_grid.add_tile(
+            HexTile(HexPosition(0, 0, 0), [STARTING_BIOME] * 6, [None] * 6)
+        )
         self.tile_manager = TileManager(3, 50)
 
         self.camera = Camera(0, 0, *WINDOW_CENTRE)
@@ -63,7 +73,7 @@ class Game(Scene):
         dy = WINDOW_CENTRE[1] - my
         d = math.sqrt(dx**2 + dy**2)
 
-        if d > MOVE_RADIUS:
+        if abs(dx) > MOVE_X or abs(dy) > MOVE_Y:
             self.input_x = -dx / d
             self.input_y = -dy / d
         else:
@@ -72,8 +82,8 @@ class Game(Scene):
             self.hovered_tile = round_to_nearest_hex(hex)
 
         self.hold = action_buffer[Action.HOLD][InputState.PRESSED]
-        self.rotate = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
-        self.try_place = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
+        self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
+        self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
         self.camera.move(dt, self.input_x, self.input_y)
@@ -98,6 +108,8 @@ class Game(Scene):
                         continue
 
                     # If same biomes are touching
+                    tile.sides_touching[i] = adj_tile.sides[(i + 3) % 6]
+                    adj_tile.sides_touching[(i + 3) % 6] = tile.sides[i]
                     if tile.sides[i] == adj_tile.sides[(i + 3) % 6]:
                         self.score += 10
                         tile.matching_sides += 1
@@ -143,6 +155,31 @@ class Game(Scene):
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
 
+        pygame.draw.rect(surface, (200, 200, 200), VIEWPORT_RECT, 8)
+        pygame.draw.rect(
+            surface,
+            (255, 255, 255),
+            ((0, 0), (WINDOW_WIDTH, WINDOW_CENTRE[1] - MOVE_Y)),
+        )
+        pygame.draw.rect(
+            surface,
+            (255, 255, 255),
+            ((0, 0), (WINDOW_CENTRE[0] - MOVE_X, WINDOW_HEIGHT)),
+        )
+        pygame.draw.rect(
+            surface,
+            (255, 255, 255),
+            (
+                (WINDOW_CENTRE[0] + MOVE_X, 0),
+                (WINDOW_CENTRE[0] - MOVE_X, WINDOW_HEIGHT),
+            ),
+        )
+        pygame.draw.rect(
+            surface,
+            (255, 255, 255),
+            ((0, WINDOW_CENTRE[1] + MOVE_Y), (WINDOW_WIDTH, WINDOW_CENTRE[1] - MOVE_Y)),
+        )
+
         for i, preview in enumerate(self.tile_manager.get_preview()):
             if preview is None:
                 break
@@ -159,7 +196,12 @@ class Game(Scene):
             (PREVIEW_X, PREVIEW_Y),
         )
 
-        pygame.draw.circle(surface, (255, 255, 255), WINDOW_CENTRE, MOVE_RADIUS, 5)
-
-        self.font.render_to(surface, (0, 20), f"{self.hovered_tile}")
-        self.font.render_to(surface, (0, 30), f"SCORE: {self.score}")
+        render_centered_text(
+            surface,
+            self.font,
+            f"{self.hovered_tile}",
+            (WINDOW_CENTRE[0], WINDOW_HEIGHT - 10),
+        )
+        render_centered_text(
+            surface, self.font, f"{self.score}", (WINDOW_CENTRE[0], 10)
+        )

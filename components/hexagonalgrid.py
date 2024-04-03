@@ -44,7 +44,14 @@ HIGHLIGHT_COLOUR = (255, 255, 0)
 OPEN_COLOUR = (20, 150, 170)
 
 
-HexSides = tuple[Biome, Biome, Biome, Biome, Biome, Biome]
+HexSides = tuple[
+    Optional[Biome],
+    Optional[Biome],
+    Optional[Biome],
+    Optional[Biome],
+    Optional[Biome],
+    Optional[Biome],
+]
 
 
 @dataclass
@@ -61,6 +68,7 @@ class HexPosition:
 class HexTile:
     position: HexPosition
     sides: HexSides
+    sides_touching: HexSides
     matching_sides: int = 0
 
 
@@ -158,10 +166,12 @@ def render_hex(surface: pygame.Surface, camera: Camera, hex: HexTile) -> None:
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
-    pygame.draw.polygon(surface, OUTLINE_COLOUR, screen_corners, OUTLINE_WIDTH)
-
-    # for i in range(6):
-    #     pygame.draw.circle(surface, OUTLINE_COLOUR, screen_corners[i], OUTLINE_WIDTH)
+    for i in range(6):
+        if hex.sides_touching[i] is not None:
+            continue
+        pygame.draw.line(
+            surface, (0, 0, 0), screen_corners[i - 1], screen_corners[i], OUTLINE_WIDTH
+        )
 
 
 def render_open_hex(
