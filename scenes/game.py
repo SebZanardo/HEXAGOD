@@ -112,10 +112,12 @@ class Game(Scene):
         self.perfect_locations = [(1000, 1000) for i in range(7)]
 
         self.edge_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "+10", HOVER_COLOUR, 0.7) for _ in range(6)
+            PopupText(1000, 1000, self.popup_font, "+10", HOVER_COLOUR, 0.7)
+            for _ in range(6)
         ]
         self.perfect_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "PERFECT!", HIGHLIGHT_COLOUR, 1) for _ in range(7)
+            PopupText(1000, 1000, self.popup_font, "PERFECT!", HIGHLIGHT_COLOUR, 1)
+            for _ in range(7)
         ]
 
     def handle_input(
@@ -315,22 +317,20 @@ class Game(Scene):
         if held_tile is not None:
             render_preview_hex(surface, HELD_X, HELD_Y, held_tile)
 
-        render_centered_text(surface, self.font, "HELD", (HELD_X, HELD_Y - SIZE - 16), OUTLINE_COLOUR)
+        render_centered_text(
+            surface, self.font, "HELD", (HELD_X, HELD_Y - SIZE - 16), OUTLINE_COLOUR
+        )
 
         render_centered_text(
             surface,
             self.big_font,
             f"{self.tile_manager.get_remaining()}",
             (PREVIEW_X, PREVIEW_Y),
-            HOVER_COLOUR
+            HOVER_COLOUR,
         )
 
         render_centered_text(
-            surface,
-            self.font,
-            "LEFT",
-            (PREVIEW_X, PREVIEW_Y + 14),
-            OUTLINE_COLOUR
+            surface, self.font, "LEFT", (PREVIEW_X, PREVIEW_Y + 14), OUTLINE_COLOUR
         )
 
         render_centered_text(
@@ -338,13 +338,23 @@ class Game(Scene):
             self.font,
             f"{self.hovered_tile}",
             (WINDOW_CENTRE[0], WINDOW_HEIGHT - 10),
-            OUTLINE_COLOUR
+            OUTLINE_COLOUR,
         )
 
         render_centered_text(
-            surface, self.big_font, f"{self.score}", (WINDOW_CENTRE[0], PREVIEW_Y), HOVER_COLOUR
+            surface,
+            self.big_font,
+            f"{self.score}",
+            (WINDOW_CENTRE[0], PREVIEW_Y),
+            HOVER_COLOUR,
         )
 
         if self.tile_manager.get_remaining() == 0:
             render_to(surface, self.font, "GAME OVER!", (3, 5), OUTLINE_COLOUR)
-            render_to(surface, self.font, "PRESS R TO RESTART", (3, WINDOW_HEIGHT - 15), OUTLINE_COLOUR)
+            render_to(
+                surface,
+                self.font,
+                "PRESS R TO RESTART",
+                (3, WINDOW_HEIGHT - 15),
+                OUTLINE_COLOUR,
+            )

@@ -5,9 +5,12 @@ from components.camera import Camera
 from utilities.math import clamp
 
 
-def render_to(surface: pygame.Surface, font: pygame.font.Font, text: str, dest, colour) -> None:
+def render_to(
+    surface: pygame.Surface, font: pygame.font.Font, text: str, dest, colour
+) -> None:
     text_render = font.render(text, False, colour)
     surface.blit(text_render, dest)
+
 
 def render_centered_text(
     surface: pygame.Surface, font: pygame.font.Font, text: str, dest, colour
@@ -21,7 +24,13 @@ def render_centered_text(
 
 class PopupText:
     def __init__(
-        self, x: float, y: float, font: pygame.font.Font, text: str, colour, duration: float
+        self,
+        x: float,
+        y: float,
+        font: pygame.font.Font,
+        text: str,
+        colour,
+        duration: float,
     ) -> None:
         self.x = x
         self.y = y
@@ -29,11 +38,7 @@ class PopupText:
         frames = []
         length = int(duration / 0.05)
         for i in range(length):
-            frame = font.render(
-                    text,
-                    False,
-                    colour
-                )
+            frame = font.render(text, False, colour)
             frame.set_alpha(clamp(i * (1000 / length), 0, 255))
 
             frames.append(frame)
