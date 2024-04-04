@@ -48,7 +48,7 @@ class Core:
 
             pygame.display.flip()
 
-            asyncio.sleep(0)
+            await asyncio.sleep(0)
 
     def get_input(self) -> InputBuffer:
         keys_pressed = pygame.key.get_just_pressed()
