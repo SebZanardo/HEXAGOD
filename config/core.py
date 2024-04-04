@@ -20,10 +20,6 @@ class Core:
     pygame.display.set_icon(icon)
     pygame.display.set_caption(CAPTION)
 
-    pygame.mixer.music.load("assets/hexagod.mp3")
-    pygame.mixer.music.set_volume(0.6)
-    pygame.mixer.music.play(-1)
-
     last_mouse_pressed = (False, False, False)
     last_action_mapping_pressed = {
         action: action_mappings[action][0] for action in Action
@@ -35,6 +31,10 @@ class Core:
         self.debug_font.antialiased = False
         self.debug_font.fgcolor = (255, 255, 255)
         self.debug_font.bgcolor = (0, 0, 0)
+
+        theme_music = pygame.mixer.Sound("assets/hexagod.mp3")
+        pygame.mixer.Channel(0).set_volume(0.5)
+        pygame.mixer.Channel(0).play(theme_music, -1)
 
     def run(self) -> None:
         while True:

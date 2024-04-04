@@ -46,6 +46,11 @@ class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
 
+        self.hold_sfx = pygame.mixer.Sound("assets/hold.mp3")
+        self.perfect_sfx = pygame.mixer.Sound("assets/perfect.mp3")
+        self.place_sfx = pygame.mixer.Sound("assets/place.mp3")
+        self.rotate_sfx = pygame.mixer.Sound("assets/rotate.mp3")
+
         self.popup_font = pygame.freetype.Font("assets/joystix.otf", 8)
         self.popup_font.antialiased = False
         self.popup_font.fgcolor = (255, 255, 255)
@@ -147,9 +152,11 @@ class Game(Scene):
 
         if self.hold:
             self.tile_manager.swap_held_tile()
+            pygame.mixer.Channel(1).play(self.hold_sfx)
 
         if self.rotate:
             self.tile_manager.rotate_active_tile()
+            pygame.mixer.Channel(4).play(self.rotate_sfx)
 
         if self.try_place and self.hex_grid.is_open(self.hovered_tile):
             tile = self.tile_manager.create_active_tile(self.hovered_tile)
@@ -159,6 +166,7 @@ class Game(Scene):
                 )
 
                 self.hex_grid.add_tile(tile)
+                pygame.mixer.Channel(3).play(self.place_sfx)
 
                 # Scoring
                 for i, neighbour in enumerate(HEXAGONAL_NEIGHBOURS):
@@ -187,12 +195,14 @@ class Game(Scene):
                             self.score += 100
                             self.tile_manager.add_to_remaining(3)
                             self.perfect_popup_text[0].move(*popup_pos)
+                            pygame.mixer.Channel(2).play(self.perfect_sfx)
                         if adj_tile.matching_sides == 6:
                             self.score += 100
                             self.tile_manager.add_to_remaining(3)
                             self.perfect_popup_text[1].move(
                                 *hex_to_world(adj_tile.position)
                             )
+                            pygame.mixer.Channel(2).play(self.perfect_sfx)
 
                 self.tile_manager.get_next_tile()
 
