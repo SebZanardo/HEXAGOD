@@ -16,7 +16,7 @@ WINDOW_SETUP = {
     "vsync": 1,
 }
 
-CAPTION = "Pygame Community Spring Jam 2024"
+CAPTION = "HEXAGOD"
 FPS = 60
 
 

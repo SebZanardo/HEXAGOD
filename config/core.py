@@ -1,3 +1,4 @@
+import asyncio  # For web builds of the game
 import pygame
 import pygame.freetype
 
@@ -36,7 +37,7 @@ class Core:
         pygame.mixer.Channel(0).set_volume(0.5)
         pygame.mixer.Channel(0).play(theme_music, -1)
 
-    def run(self) -> None:
+    async def run(self) -> None:
         while True:
             elapsed_time = self.clock.tick(FPS)
             dt = elapsed_time / 1000.0  # Convert to seconds
@@ -57,6 +58,8 @@ class Core:
             # self.debug_font.render_to(self.window, (0, 10), f"DT {dt}")
 
             pygame.display.flip()
+
+            asyncio.sleep(0)
 
     def get_input(self) -> InputBuffer:
         keys_pressed = pygame.key.get_just_pressed()
