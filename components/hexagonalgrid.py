@@ -58,6 +58,12 @@ HIGHLIGHT_COLOUR = (255, 255, 0)
 OPEN_COLOUR = (20, 150, 170)
 
 
+class SideStates(Enum):
+    UNKNOWN = auto()
+    MATCH = auto()
+    MISSMATCH = auto()
+
+
 HexSides = tuple[
     Optional[Biome],
     Optional[Biome],
@@ -241,14 +247,16 @@ def render_highlighted_hex(
     surface: pygame.Surface,
     camera: Camera,
     hex_position: HexPosition,
-    sides: list[bool],
+    sides: list[SideStates],
 ) -> None:
     centre = hex_to_world(hex_position)
     corners = get_hex_corners(*centre)
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
     for i in range(6):
-        colour = HIGHLIGHT_COLOUR if sides[i] else HOVER_COLOUR
+        if sides[i] == SideStates.MISSMATCH:
+            continue
+        colour = HIGHLIGHT_COLOUR if sides[i] == SideStates.MATCH else HOVER_COLOUR
         pygame.draw.line(
             surface, colour, screen_corners[i - 1], screen_corners[i], OUTLINE_WIDTH
         )

@@ -11,6 +11,7 @@ from components.hexagonalgrid import (
     OPEN_COLOUR,
     OUTLINE_COLOUR,
     Biome,
+    SideStates,
     HexPosition,
     HexTile,
     HexagonalGrid,
@@ -254,7 +255,7 @@ class Game(Scene):
         for hex in self.hex_grid.get_placed_tiles():
             render_hex(surface, self.camera, hex, self.BIOME_SPRITES)
 
-        matching_sides = [False] * 6
+        matching_sides = [SideStates.UNKNOWN] * 6
         if (
             self.hex_grid.is_open(self.hovered_tile)
             and self.tile_manager.get_active() is not None
@@ -268,7 +269,9 @@ class Game(Scene):
 
                 # If same biomes are touching
                 if self.tile_manager.get_active()[i] == adj_tile.sides[(i + 3) % 6]:
-                    matching_sides[i] = True
+                    matching_sides[i] = SideStates.MATCH
+                else:
+                    matching_sides[i] = SideStates.MISSMATCH
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
 
