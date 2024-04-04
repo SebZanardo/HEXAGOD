@@ -11,19 +11,29 @@ Build a world by connecting different temperature biomes on a hexagonal grid
   <a href="https://zen-studios.itch.io/hexagod">My submission page for the Pygame Community Spring Jam 2024</a>
 </p>
 
+<h3 align="center">
+HOW TO PLAY
+</h3>
 <p align="center">
-  <img src="https://github.com/SebZanardo/Pygame-Community-Spring-Jam-2024/assets/97170564/0f7b3919-b539-4419-ac25-34beec259374"/>
+Try to get the highest score you can by placing tiles<br>
+The game ends when you run out of tiles<br>
+You score +10 points per connected edge when placing a tile<br>
+If you connect all six sides of a tile to its corresponding biomes you get a 'perfect' tile<br>
+A 'perfect' tile scores you +100 points and +3 more tiles to your stack<br>
+A tile will go into shadow when it can no longer become a 'perfect' tile<br>
 </p>
 
 <h3 align="center">
 CONTROLS
 </h3>
 <p align="center">
-Move mouse to the edges of the screen to move around<br>
-Left Click: place active tile<br>
-Right Click: rotate active tile<br>
+Move the mouse to the edges of the screen to move around<br>
+LMB: place active tile<br>
+RMB: rotate active tile<br>
 F: hold active tile<br>
 C: centre to world origin<br>
 R: restart<br>
 ESC: quit<br>
 </p>
+
+
