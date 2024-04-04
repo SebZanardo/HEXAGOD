@@ -47,20 +47,20 @@ class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
 
-        self.hold_sfx = pygame.mixer.Sound("assets/hold.mp3")
-        self.perfect_sfx = pygame.mixer.Sound("assets/perfect.mp3")
-        self.place_sfx = pygame.mixer.Sound("assets/place.mp3")
-        self.rotate_sfx = pygame.mixer.Sound("assets/rotate.mp3")
+        self.hold_sfx = pygame.mixer.Sound("assets/hold.ogg")
+        self.perfect_sfx = pygame.mixer.Sound("assets/perfect.ogg")
+        self.place_sfx = pygame.mixer.Sound("assets/place.ogg")
+        self.rotate_sfx = pygame.mixer.Sound("assets/rotate.ogg")
 
-        self.popup_font = pygame.freetype.Font("assets/joystix.otf", 8)
+        self.popup_font = pygame.freetype.Font("assets/joystix.ttf", 8)
         self.popup_font.antialiased = False
         self.popup_font.fgcolor = (255, 255, 255)
 
-        self.font = pygame.freetype.Font("assets/joystix.otf", 10)
+        self.font = pygame.freetype.Font("assets/joystix.ttf", 10)
         self.font.antialiased = False
         self.font.fgcolor = OUTLINE_COLOUR
 
-        self.big_font = pygame.freetype.Font("assets/joystix.otf", 20)
+        self.big_font = pygame.freetype.Font("assets/joystix.ttf", 20)
         self.big_font.antialiased = False
         self.big_font.fgcolor = (255, 255, 255)
 

@@ -41,7 +41,7 @@ BIOME_COLOUR_MAP = {
     Biome.SNOW: (208, 229, 227),
 }
 
-DARK = 20
+DARK = 25
 BIOME_FAILED_COLOUR_MAP = {
     Biome.SWAMP: (191 - DARK, 148 - DARK, 228 - DARK),
     Biome.GRASS: (87 - DARK, 167 - DARK, 115 - DARK),

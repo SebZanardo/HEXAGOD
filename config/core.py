@@ -28,12 +28,12 @@ class Core:
 
     def __init__(self) -> None:
         self.scene_manager = SceneManager(Game)
-        self.debug_font = pygame.freetype.Font("assets/joystix.otf", 10)
+        self.debug_font = pygame.freetype.Font("assets/joystix.ttf", 10)
         self.debug_font.antialiased = False
         self.debug_font.fgcolor = (255, 255, 255)
         self.debug_font.bgcolor = (0, 0, 0)
 
-        theme_music = pygame.mixer.Sound("assets/hexagod.mp3")
+        theme_music = pygame.mixer.Sound("assets/hexagod.ogg")
         pygame.mixer.Channel(0).set_volume(0.5)
         pygame.mixer.Channel(0).play(theme_music, -1)
 
