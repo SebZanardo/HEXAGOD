@@ -33,7 +33,7 @@ RMB: rotate active tile<br>
 F: hold active tile<br>
 C: centre to world origin<br>
 R: restart<br>
-ESC: quit<br>
+M: mute<br>
 </p>
 
 
