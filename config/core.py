@@ -13,7 +13,7 @@ from scenes.game import Game
 class Core:
     pygame.init()
 
-    window = pygame.display.set_mode(WINDOW_SETUP["size"])
+    window = pygame.display.set_mode(**WINDOW_SETUP)
     clock = pygame.time.Clock()
     icon = pygame.image.load("assets/icon.png")
 

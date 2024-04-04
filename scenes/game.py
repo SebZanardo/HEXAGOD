@@ -369,7 +369,10 @@ class Game(Scene):
             HOVER_COLOUR,
         )
 
-        if self.tile_manager.get_remaining() == 0:
+        if (
+            self.tile_manager.get_remaining() == 0
+            and self.tile_manager.get_active() is None
+        ):
             render_to(surface, self.font, "GAME OVER!", (3, 5), OUTLINE_COLOUR)
             render_to(
                 surface,
