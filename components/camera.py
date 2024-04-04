@@ -1,4 +1,4 @@
-MAX_MOVE_SPEED = 360
+MAX_MOVE_SPEED = 160
 
 
 class Camera:

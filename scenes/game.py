@@ -60,12 +60,12 @@ class Game(Scene):
 
         self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 8, 8)
         self.BIOME_SPRITE_MAP = {
-            Biome.SWAMP: [0, 6],
-            Biome.GRASS: [1, 7],
-            Biome.SAND: [2, 8],
-            Biome.FOREST: [3, 9],
-            Biome.MOUNTAIN: [4, 10],
-            Biome.SNOW: [5, 11],
+            Biome.SWAMP: [0, 6, 12],
+            Biome.GRASS: [1, 7, 13],
+            Biome.SAND: [2, 8, 14],
+            Biome.FOREST: [3, 9, 15],
+            Biome.MOUNTAIN: [4, 10, 16],
+            Biome.SNOW: [5, 11, 17],
         }
 
         self.hex_grid = HexagonalGrid()
