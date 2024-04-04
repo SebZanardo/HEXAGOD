@@ -13,11 +13,11 @@ from components.camera import Camera
 # https://www.redblobgames.com/grids/hexagons/
 
 
-SIZE = 26
+SIZE = 24
 WIDTH = 2 * SIZE
 HEIGHT = math.sqrt(3) * SIZE
 
-OUTLINE_WIDTH = 1
+OUTLINE_WIDTH = 2
 
 RENDER_OFFSETS_EVEN = ((0, -7), (-5, 2), (5, 2))
 RENDER_OFFSETS_ODD = ((0, 5), (-5, -3), (5, -3))
@@ -118,14 +118,16 @@ class HexagonalGrid:
         return astuple(hex_position) in self.open
 
 
-def hex_corner(cx: float, cy: float, i: int) -> tuple[float, float]:
+def hex_corner(cx: float, cy: float, i: int, size: float = SIZE) -> tuple[float, float]:
     angle_deg = 60 * i
     angle_rad = math.pi / 180 * angle_deg
-    return (cx + SIZE * math.cos(angle_rad), cy + SIZE * math.sin(angle_rad))
+    return (cx + size * math.cos(angle_rad), cy + size * math.sin(angle_rad))
 
 
-def get_hex_corners(cx: float, cy: float) -> list[tuple[float, float]]:
-    return [hex_corner(cx, cy, i) for i in range(6)]
+def get_hex_corners(
+    cx: float, cy: float, size: float = SIZE
+) -> list[tuple[float, float]]:
+    return [hex_corner(cx, cy, i, size) for i in range(6)]
 
 
 def hex_to_world(hex: HexPosition) -> tuple[float, float]:

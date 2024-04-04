@@ -4,10 +4,15 @@ import pygame
 
 class AnimationPlayer:
     def __init__(
-        self, unique_identifier: Hashable, frames: list[pygame.Surface], duration: float
+        self,
+        unique_identifier: Hashable,
+        frames: list[pygame.Surface],
+        duration: float,
+        loop: bool = True,
     ) -> None:
         self.animations = {}
         self.state = None
+        self.loop = loop
         self.add_animation(unique_identifier, frames, duration)
         self.switch_animation(unique_identifier)
 
@@ -15,11 +20,18 @@ class AnimationPlayer:
         self.elasped_time += dt
         if self.elasped_time > self.frame_duration:
             self.frame_index += 1
-            self.frame_index %= len(self.frames)
+            if self.loop:
+                self.frame_index %= len(self.frames)
+            else:
+                self.frame_index = min(len(self.frames) - 1, self.frame_index)
             self.elasped_time = 0.0
 
     def get_frame(self) -> pygame.Surface:
         return self.frames[self.frame_index]
+
+    def reset(self) -> None:
+        self.frame_index = 0
+        self.elasped_time = 0.0
 
     def add_animation(
         self, unique_identifier: Hashable, frames: list[pygame.Surface], duration: float

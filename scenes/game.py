@@ -13,6 +13,8 @@ from components.hexagonalgrid import (
     HexPosition,
     HexTile,
     HexagonalGrid,
+    get_hex_corners,
+    hex_to_world,
     world_to_hex,
     round_to_nearest_hex,
     render_hex,
@@ -23,13 +25,14 @@ from components.hexagonalgrid import (
 )
 from components.tilemanager import TileManager, STARTING_BIOME
 from components.camera import Camera
-from components.ui import render_centered_text
+from components.ui import render_centered_text, PopupText
 from utilities.spriteloading import slice_sheet
+from components.animationplayer import AnimationPlayer
 
 
 PREVIEW_OFFSET = SIZE * 2
 PREVIEW_X = WINDOW_WIDTH - SIZE
-PREVIEW_Y = SIZE / 2
+PREVIEW_Y = SIZE / 2 + 2
 
 HELD_X = SIZE
 HELD_Y = WINDOW_CENTRE[1]
@@ -42,8 +45,17 @@ class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
 
+        self.popup_font = pygame.freetype.Font("assets/joystix.otf", 8)
+        self.popup_font.antialiased = False
+        self.popup_font.fgcolor = (255, 255, 255)
+
         self.font = pygame.freetype.Font("assets/joystix.otf", 10)
         self.font.antialiased = False
+
+        self.big_font = pygame.freetype.Font("assets/joystix.otf", 20)
+        self.big_font.antialiased = False
+        self.big_font.fgcolor = (255, 255, 255)
+
         self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 16, 16)
         self.BIOME_SPRITE_MAP = {
             Biome.SWAMP: [0, 0, 6],
@@ -68,6 +80,34 @@ class Game(Scene):
 
         self.hovered_tile = HexPosition(0, 0, 0)
         self.score = 0
+
+        place_frames = []
+        place_length = 16
+        for i in range(place_length):
+            frame = pygame.Surface((SIZE * 4, SIZE * 4), pygame.SRCALPHA)
+            outer_corners = get_hex_corners(
+                SIZE * 2, SIZE * 2, SIZE * (1 - i / (place_length * 4))
+            )
+            inner_corners = get_hex_corners(
+                SIZE * 2, SIZE * 2, SIZE * (1.5 - i / (place_length * 2))
+            )
+            pygame.draw.polygon(
+                frame, (255, 255, 255, i * (150 / place_length)), outer_corners, 2
+            )
+            pygame.draw.polygon(
+                frame, (255, 255, 255, i * (150 / place_length)), inner_corners, 2
+            )
+            place_frames.append(frame)
+        place_frames.reverse()
+        self.place_animation = AnimationPlayer("place", place_frames, 0.05, False)
+        self.place_location = (0, 0)
+
+        self.edge_popup_text = [
+            PopupText(1000, 1000, self.popup_font, "+10", 0.5) for _ in range(6)
+        ]
+        self.perfect_popup_text = [
+            PopupText(1000, 1000, self.popup_font, "PERFECT", 0.5) for _ in range(2)
+        ]
 
     def handle_input(
         self, action_buffer: ActionBuffer, mouse_buffer: MouseBuffer
@@ -125,6 +165,13 @@ class Game(Scene):
                     tile.sides_touching[i] = adj_tile.sides[(i + 3) % 6]
                     adj_tile.sides_touching[(i + 3) % 6] = tile.sides[i]
                     if tile.sides[i] == adj_tile.sides[(i + 3) % 6]:
+                        popup_pos = hex_to_world(tile.position)
+                        offset_pos = hex_to_world(neighbour)
+                        edge_pos = (
+                            popup_pos[0] + offset_pos[0] // 2,
+                            popup_pos[1] + offset_pos[1] // 2,
+                        )
+                        self.edge_popup_text[i].move(*edge_pos)
                         self.score += 10
                         tile.matching_sides += 1
                         adj_tile.matching_sides += 1
@@ -132,11 +179,25 @@ class Game(Scene):
                         if tile.matching_sides == 6:
                             self.score += 100
                             self.tile_manager.add_to_remaining(3)
+                            self.perfect_popup_text[0].move(*popup_pos)
                         if adj_tile.matching_sides == 6:
                             self.score += 100
                             self.tile_manager.add_to_remaining(3)
+                            self.perfect_popup_text[1].move(
+                                *hex_to_world(adj_tile.position)
+                            )
 
                 self.tile_manager.get_next_tile()
+
+                self.place_location = hex_to_world(tile.position)
+                self.place_animation.reset()
+
+        self.place_animation.update(dt)
+        for text in self.edge_popup_text:
+            text.update(dt)
+
+        for text in self.perfect_popup_text:
+            text.update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
         surface.fill((83, 216, 251))
@@ -168,6 +229,16 @@ class Game(Scene):
                     matching_sides[i] = True
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
+
+        place_screen = self.camera.world_to_screen(*self.place_location)
+        place_screen = (place_screen[0] - SIZE * 2, place_screen[1] - SIZE * 2)
+        surface.blit(self.place_animation.get_frame(), place_screen)
+
+        for text in self.edge_popup_text:
+            text.render(surface, self.camera)
+
+        for text in self.perfect_popup_text:
+            text.render(surface, self.camera)
 
         pygame.draw.rect(
             surface,
@@ -206,7 +277,7 @@ class Game(Scene):
 
         render_centered_text(
             surface,
-            self.font,
+            self.big_font,
             f"{self.tile_manager.get_remaining()}",
             (PREVIEW_X, PREVIEW_Y),
         )
@@ -219,5 +290,5 @@ class Game(Scene):
         )
 
         render_centered_text(
-            surface, self.font, f"{self.score}", (WINDOW_CENTRE[0], 10)
+            surface, self.big_font, f"{self.score}", (WINDOW_CENTRE[0], PREVIEW_Y)
         )
