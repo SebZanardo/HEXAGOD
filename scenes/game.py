@@ -144,10 +144,10 @@ class Game(Scene):
             self.hovered_tile = round_to_nearest_hex(hex)
 
         self.hold = action_buffer[Action.HOLD][InputState.PRESSED]
-        self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
-        self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
         self.centre = action_buffer[Action.CENTRE][InputState.PRESSED]
         self.toggle_mute = action_buffer[Action.MUTE][InputState.PRESSED]
+        self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
+        self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
         self.camera.move(dt, self.input_x, self.input_y)

@@ -13,7 +13,7 @@ from scenes.game import Game
 class Core:
     pygame.init()
 
-    window = pygame.display.set_mode(**WINDOW_SETUP)
+    window = pygame.display.set_mode(WINDOW_SETUP["size"])
     clock = pygame.time.Clock()
     icon = pygame.image.load("assets/icon.png")
 
@@ -21,6 +21,7 @@ class Core:
     pygame.display.set_caption(CAPTION)
 
     last_mouse_pressed = (False, False, False)
+    last_action_pressed = {action: False for action in Action}
     last_action_mapping_pressed = {
         action: action_mappings[action][0] for action in Action
     }
@@ -51,9 +52,9 @@ class Core:
             await asyncio.sleep(0)
 
     def get_input(self) -> InputBuffer:
-        keys_pressed = pygame.key.get_just_pressed()
+        # keys_pressed = pygame.key.get_just_pressed()
         keys_held = pygame.key.get_pressed()
-        keys_released = pygame.key.get_just_released()
+        # keys_released = pygame.key.get_just_released()
 
         action_buffer = {}
         for action in Action:
@@ -63,15 +64,18 @@ class Core:
                     continue
 
                 # If an alternate key was pressed, set that bind as the current bind to 'track'
-                if keys_pressed[mapping]:
+                if keys_held[mapping]:
                     self.last_action_mapping_pressed[action] = mapping
 
             tracked_mapping = self.last_action_mapping_pressed[action]
             action_buffer[action] = {
-                InputState.PRESSED: keys_pressed[tracked_mapping],
+                InputState.PRESSED: keys_held[tracked_mapping]
+                and not self.last_action_pressed[action],
                 InputState.HELD: keys_held[tracked_mapping],
-                InputState.RELEASED: keys_released[tracked_mapping],
+                InputState.RELEASED: not keys_held[tracked_mapping]
+                and self.last_action_pressed[action],
             }
+            self.last_action_pressed[action] = keys_held[tracked_mapping]
 
         mouse_pressed = pygame.mouse.get_pressed()
         mouse_buffer = {}
@@ -98,6 +102,10 @@ class Core:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.terminate()
+            if event.type == pygame.WINDOWFOCUSLOST:
+                pygame.mixer.Channel(0).set_volume(0)
+            if event.type == pygame.WINDOWFOCUSGAINED:
+                pygame.mixer.Channel(0).set_volume(0.5)
 
     def terminate(self) -> None:
         pygame.quit()
