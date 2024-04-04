@@ -41,6 +41,16 @@ BIOME_COLOUR_MAP = {
     Biome.SNOW: (208, 229, 227),
 }
 
+DARK = 20
+BIOME_FAILED_COLOUR_MAP = {
+    Biome.SWAMP: (191 - DARK, 148 - DARK, 228 - DARK),
+    Biome.GRASS: (87 - DARK, 167 - DARK, 115 - DARK),
+    Biome.SAND: (255 - DARK, 225 - DARK, 86 - DARK),
+    Biome.FOREST: (0, 83 - DARK, 81 - DARK),
+    Biome.MOUNTAIN: (99 - DARK, 89 - DARK, 92 - DARK),
+    Biome.SNOW: (208 - DARK, 229 - DARK, 227 - DARK),
+}
+
 
 OUTLINE_COLOUR = (50, 30, 50)
 HOVER_COLOUR = (255, 255, 255)
@@ -75,6 +85,7 @@ class HexTile:
     sides_touching: HexSides
     sector_sprites: Optional[list[tuple[int]]]
     matching_sides: int = 0
+    can_be_perfect: bool = True
 
 
 HEXAGONAL_NEIGHBOURS = (
@@ -174,7 +185,11 @@ def render_hex(
     screen_corners = [camera.world_to_screen(*c) for c in corners]
 
     for i in range(6):
-        colour = BIOME_COLOUR_MAP[hex.sides[i]]
+        colour = (
+            BIOME_COLOUR_MAP[hex.sides[i]]
+            if hex.can_be_perfect
+            else BIOME_FAILED_COLOUR_MAP[hex.sides[i]]
+        )
         sector = [screen_corners[i - 1], screen_corners[i], screen_centre]
         pygame.draw.polygon(surface, colour, sector)
 
@@ -207,6 +222,9 @@ def render_hex(
             screen_corners[i],
             OUTLINE_WIDTH,
         )
+
+    # for i in range(6):
+    #     pygame.draw.circle(surface, OUTLINE_COLOUR, screen_corners[i], 1)
 
 
 def render_open_hex(

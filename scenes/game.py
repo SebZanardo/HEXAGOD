@@ -203,6 +203,9 @@ class Game(Scene):
                                 *hex_to_world(adj_tile.position)
                             )
                             pygame.mixer.Channel(2).play(self.perfect_sfx)
+                    else:
+                        tile.can_be_perfect = False
+                        adj_tile.can_be_perfect = False
 
                 self.tile_manager.get_next_tile()
 
@@ -318,3 +321,7 @@ class Game(Scene):
         render_centered_text(
             surface, self.big_font, f"{self.score}", (WINDOW_CENTRE[0], PREVIEW_Y)
         )
+
+        if self.tile_manager.get_remaining() == 0:
+            self.font.render_to(surface, (3, 5), "GAME OVER!")
+            self.font.render_to(surface, (3, WINDOW_HEIGHT - 15), "PRESS R TO RESTART")
