@@ -1,12 +1,13 @@
 <p align="center">
-  <img src="https://github.com/SebZanardo/Pygame-Community-Spring-Jam-2024/assets/97170564/e442eb62-2464-477b-bd79-7880f0890025"/>
+  <img src="https://github.com/SebZanardo/Pygame-Community-Spring-Jam-2024/assets/97170564/0e83ac30-4100-4b07-82b8-c109708174d8"/><br>
+  Legendary music by Hunter Starr
 </p>
 
 <h3 align="center">
 Build a world by connecting different temperature biomes on a hexagonal grid
 </h3>
 <p align="center">
-My submission for the Pygame Community Spring Jam 2024
+My submission for the Pygame Community Spring Jam 2024<br>
 </p>
 
 <p align="center">
