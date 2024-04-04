@@ -92,28 +92,35 @@ class Game(Scene):
         place_length = 16
         for i in range(place_length):
             frame = pygame.Surface((SIZE * 4, SIZE * 4), pygame.SRCALPHA)
-            outer_corners = get_hex_corners(
-                SIZE * 2, SIZE * 2, SIZE * (1 - i / (place_length * 4))
-            )
-            inner_corners = get_hex_corners(
+            waves = get_hex_corners(
                 SIZE * 2, SIZE * 2, SIZE * (1.5 - i / (place_length * 2))
             )
-            pygame.draw.polygon(
-                frame, (0, 0, 0, i * (150 / place_length)), outer_corners, 2
-            )
-            pygame.draw.polygon(
-                frame, (0, 0, 0, i * (150 / place_length)), inner_corners, 2
-            )
+            pygame.draw.polygon(frame, (0, 0, 0, i * (150 / place_length)), waves, 2)
             place_frames.append(frame)
         place_frames.reverse()
         self.place_animation = AnimationPlayer("place", place_frames, 0.05, False)
         self.place_location = (0, 0)
 
+        perfect_frames = []
+        perfect_length = 16
+        for i in range(perfect_length):
+            frame = pygame.Surface((SIZE * 2, SIZE * 2), pygame.SRCALPHA)
+            waves = get_hex_corners(SIZE, SIZE, SIZE * (i / (place_length)))
+            pygame.draw.polygon(
+                frame, (255, 255, 255, i * (150 / place_length)), waves, 2
+            )
+            perfect_frames.append(frame)
+        perfect_frames.reverse()
+        self.perfect_animations = [
+            AnimationPlayer("perfect", perfect_frames, 0.05, False) for i in range(7)
+        ]
+        self.perfect_locations = [(1000, 1000) for i in range(7)]
+
         self.edge_popup_text = [
             PopupText(1000, 1000, self.popup_font, "+10", 0.7) for _ in range(6)
         ]
         self.perfect_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "PERFECT!", 1) for _ in range(2)
+            PopupText(1000, 1000, self.popup_font, "PERFECT!", 1) for _ in range(7)
         ]
 
     def handle_input(
@@ -191,21 +198,29 @@ class Game(Scene):
                         tile.matching_sides += 1
                         adj_tile.matching_sides += 1
 
-                        if tile.matching_sides == 6:
-                            self.score += 100
-                            self.tile_manager.add_to_remaining(3)
-                            self.perfect_popup_text[0].move(*popup_pos)
-                            pygame.mixer.Channel(2).play(self.perfect_sfx)
                         if adj_tile.matching_sides == 6:
                             self.score += 100
                             self.tile_manager.add_to_remaining(3)
-                            self.perfect_popup_text[1].move(
+                            self.perfect_popup_text[i + 1].move(
                                 *hex_to_world(adj_tile.position)
                             )
                             pygame.mixer.Channel(2).play(self.perfect_sfx)
+                            self.perfect_locations[i + 1] = hex_to_world(
+                                adj_tile.position
+                            )
+                            self.perfect_animations[i + 1].reset()
                     else:
                         tile.can_be_perfect = False
                         adj_tile.can_be_perfect = False
+
+                if tile.matching_sides == 6:
+                    self.score += 100
+                    self.tile_manager.add_to_remaining(3)
+
+                    self.perfect_popup_text[0].move(*popup_pos)
+                    pygame.mixer.Channel(2).play(self.perfect_sfx)
+                    self.perfect_locations[0] = hex_to_world(tile.position)
+                    self.perfect_animations[0].reset()
 
                 self.tile_manager.get_next_tile()
 
@@ -213,6 +228,9 @@ class Game(Scene):
                 self.place_animation.reset()
 
         self.place_animation.update(dt)
+        for anim in self.perfect_animations:
+            anim.update(dt)
+
         for text in self.edge_popup_text:
             text.update(dt)
 
@@ -253,6 +271,11 @@ class Game(Scene):
                     matching_sides[i] = True
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
+
+        for i, anim in enumerate(self.perfect_animations):
+            perfect_screen = self.camera.world_to_screen(*self.perfect_locations[i])
+            perfect_screen = (perfect_screen[0] - SIZE, perfect_screen[1] - SIZE)
+            surface.blit(anim.get_frame(), perfect_screen)
 
         for text in self.edge_popup_text:
             text.render(surface, self.camera)
