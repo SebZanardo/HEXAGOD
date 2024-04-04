@@ -150,6 +150,12 @@ class Game(Scene):
         self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
+        if not pygame.mouse.get_focused():
+            pygame.mixer.Channel(0).set_volume(0)
+            return
+        else:
+            pygame.mixer.Channel(0).set_volume(0.5)
+
         self.camera.move(dt, self.input_x, self.input_y)
 
         if self.toggle_mute:

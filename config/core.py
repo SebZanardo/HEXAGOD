@@ -102,10 +102,6 @@ class Core:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.terminate()
-            if event.type == pygame.WINDOWFOCUSLOST:
-                pygame.mixer.Channel(0).set_volume(0)
-            if event.type == pygame.WINDOWFOCUSGAINED:
-                pygame.mixer.Channel(0).set_volume(0.5)
 
     def terminate(self) -> None:
         pygame.quit()
