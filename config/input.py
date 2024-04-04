@@ -18,3 +18,4 @@ class Action(Enum):
     RESTART = auto()
     CENTRE = auto()
     BACK = auto()
+    MUTE = auto()

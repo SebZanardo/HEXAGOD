@@ -25,4 +25,5 @@ action_mappings = {
     Action.RESTART: [pygame.K_r],
     Action.BACK: [pygame.K_ESCAPE],
     Action.CENTRE: [pygame.K_c],
+    Action.MUTE: [pygame.K_m],
 }

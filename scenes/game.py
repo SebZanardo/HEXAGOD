@@ -49,6 +49,7 @@ class Game(Scene):
     def __init__(self, scene_manager: SceneManager) -> None:
         super().__init__(scene_manager)
 
+        self.muted = False
         self.hold_sfx = pygame.mixer.Sound("assets/hold.ogg")
         self.perfect_sfx = pygame.mixer.Sound("assets/perfect.ogg")
         self.place_sfx = pygame.mixer.Sound("assets/place.ogg")
@@ -146,9 +147,25 @@ class Game(Scene):
         self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
         self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
         self.centre = action_buffer[Action.CENTRE][InputState.PRESSED]
+        self.toggle_mute = action_buffer[Action.MUTE][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
         self.camera.move(dt, self.input_x, self.input_y)
+
+        if self.toggle_mute:
+            self.muted = not self.muted
+            if self.muted:
+                pygame.mixer.Channel(0).set_volume(0)
+                pygame.mixer.Channel(1).set_volume(0)
+                pygame.mixer.Channel(2).set_volume(0)
+                pygame.mixer.Channel(3).set_volume(0)
+                pygame.mixer.Channel(4).set_volume(0)
+            else:
+                pygame.mixer.Channel(0).set_volume(0.5)
+                pygame.mixer.Channel(1).set_volume(1)
+                pygame.mixer.Channel(2).set_volume(1)
+                pygame.mixer.Channel(3).set_volume(1)
+                pygame.mixer.Channel(4).set_volume(1)
 
         if self.centre:
             self.camera.x = 0
