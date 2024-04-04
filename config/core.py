@@ -20,6 +20,10 @@ class Core:
     pygame.display.set_icon(icon)
     pygame.display.set_caption(CAPTION)
 
+    pygame.mixer.music.load("assets/hexagod.mp3")
+    pygame.mixer.music.set_volume(0.6)
+    pygame.mixer.music.play(-1)
+
     last_mouse_pressed = (False, False, False)
     last_action_mapping_pressed = {
         action: action_mappings[action][0] for action in Action
