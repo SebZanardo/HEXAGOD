@@ -6,8 +6,9 @@
 <h3 align="center">
 Build a world by connecting different temperature biomes on a hexagonal grid
 </h3>
+
 <p align="center">
-My submission for the Pygame Community Spring Jam 2024<br>
+  <a href="https://zen-studios.itch.io/hexagod">My submission page for the Pygame Community Spring Jam 2024</a>
 </p>
 
 <p align="center">
