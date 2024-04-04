@@ -3,6 +3,7 @@ import pygame.freetype
 
 from components.animationplayer import AnimationPlayer
 from components.camera import Camera
+from utilities.math import clamp
 
 
 def render_centered_text(
@@ -30,7 +31,7 @@ class PopupText:
                         font.fgcolor[0],
                         font.fgcolor[1],
                         font.fgcolor[2],
-                        i * (255 / length),
+                        clamp(i * (1000 / length), 0, 255),
                     ),
                 )
             )

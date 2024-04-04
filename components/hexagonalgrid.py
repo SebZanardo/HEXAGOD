@@ -19,8 +19,8 @@ HEIGHT = math.sqrt(3) * SIZE
 
 OUTLINE_WIDTH = 2
 
-RENDER_OFFSETS_EVEN = ((0, -7), (-5, 2), (5, 2))
-RENDER_OFFSETS_ODD = ((0, 5), (-5, -3), (5, -3))
+RENDER_OFFSETS_EVEN = ((0, -6), (-5, 1), (5, 1))
+RENDER_OFFSETS_ODD = ((0, 4), (-5, -2), (5, -2))
 
 
 class Biome(Enum):
@@ -194,7 +194,7 @@ def render_hex(
             offset = RENDER_OFFSETS_EVEN[p] if i % 2 == 0 else RENDER_OFFSETS_ODD[p]
             surface.blit(
                 hex_sprites[hex.sector_sprites[i][p]],
-                (middle_x - 8 + offset[0], middle_y - 8 + offset[1]),
+                (middle_x - 4 + offset[0], middle_y - 4 + offset[1]),
             )
 
     for i in range(6):

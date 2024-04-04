@@ -16,4 +16,5 @@ class MouseButton(Enum):
 class Action(Enum):
     HOLD = auto()
     RESTART = auto()
+    CENTRE = auto()
     BACK = auto()

@@ -9,6 +9,7 @@ from components.hexagonalgrid import (
     SIZE,
     HEXAGONAL_NEIGHBOURS,
     OPEN_COLOUR,
+    OUTLINE_COLOUR,
     Biome,
     HexPosition,
     HexTile,
@@ -51,19 +52,20 @@ class Game(Scene):
 
         self.font = pygame.freetype.Font("assets/joystix.otf", 10)
         self.font.antialiased = False
+        self.font.fgcolor = OUTLINE_COLOUR
 
         self.big_font = pygame.freetype.Font("assets/joystix.otf", 20)
         self.big_font.antialiased = False
         self.big_font.fgcolor = (255, 255, 255)
 
-        self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 16, 16)
+        self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 8, 8)
         self.BIOME_SPRITE_MAP = {
-            Biome.SWAMP: [0, 0, 6],
-            Biome.GRASS: [1, 1, 7],
-            Biome.SAND: [2, 2, 8],
-            Biome.FOREST: [3, 3, 9],
-            Biome.MOUNTAIN: [4, 4, 10],
-            Biome.SNOW: [5, 5, 11],
+            Biome.SWAMP: [0, 6],
+            Biome.GRASS: [1, 7],
+            Biome.SAND: [2, 8],
+            Biome.FOREST: [3, 9],
+            Biome.MOUNTAIN: [4, 10],
+            Biome.SNOW: [5, 11],
         }
 
         self.hex_grid = HexagonalGrid()
@@ -75,7 +77,7 @@ class Game(Scene):
         )
         self.hex_grid.add_tile(start_hex)
 
-        self.tile_manager = TileManager(5, 50)
+        self.tile_manager = TileManager(6, 50)
         self.camera = Camera(0, 0, *WINDOW_CENTRE)
 
         self.hovered_tile = HexPosition(0, 0, 0)
@@ -92,10 +94,10 @@ class Game(Scene):
                 SIZE * 2, SIZE * 2, SIZE * (1.5 - i / (place_length * 2))
             )
             pygame.draw.polygon(
-                frame, (255, 255, 255, i * (150 / place_length)), outer_corners, 2
+                frame, (0, 0, 0, i * (150 / place_length)), outer_corners, 2
             )
             pygame.draw.polygon(
-                frame, (255, 255, 255, i * (150 / place_length)), inner_corners, 2
+                frame, (0, 0, 0, i * (150 / place_length)), inner_corners, 2
             )
             place_frames.append(frame)
         place_frames.reverse()
@@ -103,10 +105,10 @@ class Game(Scene):
         self.place_location = (0, 0)
 
         self.edge_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "+10", 0.5) for _ in range(6)
+            PopupText(1000, 1000, self.popup_font, "+10", 0.7) for _ in range(6)
         ]
         self.perfect_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "PERFECT", 0.5) for _ in range(2)
+            PopupText(1000, 1000, self.popup_font, "PERFECT!", 1) for _ in range(2)
         ]
 
     def handle_input(
@@ -134,9 +136,14 @@ class Game(Scene):
         self.hold = action_buffer[Action.HOLD][InputState.PRESSED]
         self.rotate = mouse_buffer[MouseButton.RIGHT][InputState.PRESSED]
         self.try_place = mouse_buffer[MouseButton.LEFT][InputState.PRESSED]
+        self.centre = action_buffer[Action.CENTRE][InputState.PRESSED]
 
     def update(self, dt: float) -> None:
         self.camera.move(dt, self.input_x, self.input_y)
+
+        if self.centre:
+            self.camera.x = 0
+            self.camera.y = 0
 
         if self.hold:
             self.tile_manager.swap_held_tile()
@@ -205,6 +212,10 @@ class Game(Scene):
         for hex_position_tuple in self.hex_grid.get_open_tiles():
             render_open_hex(surface, self.camera, HexPosition(*hex_position_tuple))
 
+        place_screen = self.camera.world_to_screen(*self.place_location)
+        place_screen = (place_screen[0] - SIZE * 2, place_screen[1] - SIZE * 2)
+        surface.blit(self.place_animation.get_frame(), place_screen)
+
         active_tile = self.tile_manager.create_active_tile(self.hovered_tile)
         if active_tile is not None:
             render_hex(surface, self.camera, active_tile, self.BIOME_SPRITES)
@@ -229,10 +240,6 @@ class Game(Scene):
                     matching_sides[i] = True
 
         render_highlighted_hex(surface, self.camera, self.hovered_tile, matching_sides)
-
-        place_screen = self.camera.world_to_screen(*self.place_location)
-        place_screen = (place_screen[0] - SIZE * 2, place_screen[1] - SIZE * 2)
-        surface.blit(self.place_animation.get_frame(), place_screen)
 
         for text in self.edge_popup_text:
             text.render(surface, self.camera)
@@ -267,7 +274,9 @@ class Game(Scene):
         for i, preview in enumerate(self.tile_manager.get_preview()):
             if preview is None:
                 break
-            render_preview_hex(surface, PREVIEW_X, (i + 1) * PREVIEW_OFFSET, preview)
+            render_preview_hex(
+                surface, PREVIEW_X, (i + 1) * PREVIEW_OFFSET + 10, preview
+            )
 
         held_tile = self.tile_manager.get_held()
         if held_tile is not None:
@@ -280,6 +289,13 @@ class Game(Scene):
             self.big_font,
             f"{self.tile_manager.get_remaining()}",
             (PREVIEW_X, PREVIEW_Y),
+        )
+
+        render_centered_text(
+            surface,
+            self.font,
+            "LEFT",
+            (PREVIEW_X, PREVIEW_Y + 14),
         )
 
         render_centered_text(
