@@ -17,5 +17,4 @@ class Action(Enum):
     HOLD = auto()
     RESTART = auto()
     CENTRE = auto()
-    BACK = auto()
     MUTE = auto()
