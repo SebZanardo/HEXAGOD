@@ -1,22 +1,27 @@
 import pygame
-import pygame.freetype
 
 from components.animationplayer import AnimationPlayer
 from components.camera import Camera
 from utilities.math import clamp
 
 
+def render_to(surface: pygame.Surface, font: pygame.font.Font, text: str, dest, colour) -> None:
+    text_render = font.render(text, False, colour)
+    surface.blit(text_render, dest)
+
 def render_centered_text(
-    surface: pygame.Surface, font: pygame.freetype.Font, text: str, dest
+    surface: pygame.Surface, font: pygame.font.Font, text: str, dest, colour
 ):
-    text_rect = font.get_rect(text)
+    text_render = font.render(text, False, colour)
+    text_rect = text_render.get_rect()
     text_rect.center = dest
-    font.render_to(surface, text_rect, text)
+
+    surface.blit(text_render, text_rect)
 
 
 class PopupText:
     def __init__(
-        self, x: float, y: float, font: pygame.freetype.Font, text: str, duration: float
+        self, x: float, y: float, font: pygame.font.Font, text: str, colour, duration: float
     ) -> None:
         self.x = x
         self.y = y
@@ -24,20 +29,17 @@ class PopupText:
         frames = []
         length = int(duration / 0.05)
         for i in range(length):
-            frames.append(
-                font.render(
+            frame = font.render(
                     text,
-                    (
-                        font.fgcolor[0],
-                        font.fgcolor[1],
-                        font.fgcolor[2],
-                        clamp(i * (1000 / length), 0, 255),
-                    ),
+                    False,
+                    colour
                 )
-            )
+            frame.set_alpha(clamp(i * (1000 / length), 0, 255))
+
+            frames.append(frame)
         frames.reverse()
 
-        rect = frames[0][1]
+        rect = frames[0].get_rect()
         self.offset_x = rect.w // 2
         self.offset_y = rect.h // 2
 
@@ -55,4 +57,4 @@ class PopupText:
     def render(self, surface: pygame.Surface, camera: Camera) -> None:
         screen_pos = camera.world_to_screen(self.x, self.y)
         screen_pos = (screen_pos[0] - self.offset_x, screen_pos[1] - self.offset_y)
-        surface.blit(self.animator.get_frame()[0], screen_pos)
+        surface.blit(self.animator.get_frame(), screen_pos)

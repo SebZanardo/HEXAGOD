@@ -10,6 +10,8 @@ from components.hexagonalgrid import (
     HEXAGONAL_NEIGHBOURS,
     OPEN_COLOUR,
     OUTLINE_COLOUR,
+    HIGHLIGHT_COLOUR,
+    HOVER_COLOUR,
     Biome,
     SideStates,
     HexPosition,
@@ -27,7 +29,7 @@ from components.hexagonalgrid import (
 )
 from components.tilemanager import TileManager, STARTING_BIOME
 from components.camera import Camera
-from components.ui import render_centered_text, PopupText
+from components.ui import render_centered_text, PopupText, render_to
 from utilities.spriteloading import slice_sheet
 from components.animationplayer import AnimationPlayer
 
@@ -52,17 +54,9 @@ class Game(Scene):
         self.place_sfx = pygame.mixer.Sound("assets/place.ogg")
         self.rotate_sfx = pygame.mixer.Sound("assets/rotate.ogg")
 
-        self.popup_font = pygame.freetype.Font("assets/joystix.ttf", 8)
-        self.popup_font.antialiased = False
-        self.popup_font.fgcolor = (255, 255, 255)
-
-        self.font = pygame.freetype.Font("assets/joystix.ttf", 10)
-        self.font.antialiased = False
-        self.font.fgcolor = OUTLINE_COLOUR
-
-        self.big_font = pygame.freetype.Font("assets/joystix.ttf", 20)
-        self.big_font.antialiased = False
-        self.big_font.fgcolor = (255, 255, 255)
+        self.popup_font = pygame.font.Font("assets/joystix.ttf", 8)
+        self.font = pygame.font.Font("assets/joystix.ttf", 10)
+        self.big_font = pygame.font.Font("assets/joystix.ttf", 20)
 
         self.BIOME_SPRITES = slice_sheet("assets/tiles-Sheet.png", 8, 8)
         self.BIOME_SPRITE_MAP = {
@@ -118,10 +112,10 @@ class Game(Scene):
         self.perfect_locations = [(1000, 1000) for i in range(7)]
 
         self.edge_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "+10", 0.7) for _ in range(6)
+            PopupText(1000, 1000, self.popup_font, "+10", HOVER_COLOUR, 0.7) for _ in range(6)
         ]
         self.perfect_popup_text = [
-            PopupText(1000, 1000, self.popup_font, "PERFECT!", 1) for _ in range(7)
+            PopupText(1000, 1000, self.popup_font, "PERFECT!", HIGHLIGHT_COLOUR, 1) for _ in range(7)
         ]
 
     def handle_input(
@@ -321,13 +315,14 @@ class Game(Scene):
         if held_tile is not None:
             render_preview_hex(surface, HELD_X, HELD_Y, held_tile)
 
-        render_centered_text(surface, self.font, "HELD", (HELD_X, HELD_Y - SIZE - 16))
+        render_centered_text(surface, self.font, "HELD", (HELD_X, HELD_Y - SIZE - 16), OUTLINE_COLOUR)
 
         render_centered_text(
             surface,
             self.big_font,
             f"{self.tile_manager.get_remaining()}",
             (PREVIEW_X, PREVIEW_Y),
+            HOVER_COLOUR
         )
 
         render_centered_text(
@@ -335,6 +330,7 @@ class Game(Scene):
             self.font,
             "LEFT",
             (PREVIEW_X, PREVIEW_Y + 14),
+            OUTLINE_COLOUR
         )
 
         render_centered_text(
@@ -342,12 +338,13 @@ class Game(Scene):
             self.font,
             f"{self.hovered_tile}",
             (WINDOW_CENTRE[0], WINDOW_HEIGHT - 10),
+            OUTLINE_COLOUR
         )
 
         render_centered_text(
-            surface, self.big_font, f"{self.score}", (WINDOW_CENTRE[0], PREVIEW_Y)
+            surface, self.big_font, f"{self.score}", (WINDOW_CENTRE[0], PREVIEW_Y), HOVER_COLOUR
         )
 
         if self.tile_manager.get_remaining() == 0:
-            self.font.render_to(surface, (3, 5), "GAME OVER!")
-            self.font.render_to(surface, (3, WINDOW_HEIGHT - 15), "PRESS R TO RESTART")
+            render_to(surface, self.font, "GAME OVER!", (3, 5), OUTLINE_COLOUR)
+            render_to(surface, self.font, "PRESS R TO RESTART", (3, WINDOW_HEIGHT - 15), OUTLINE_COLOUR)

@@ -1,6 +1,5 @@
 import asyncio  # For web builds of the game
 import pygame
-import pygame.freetype
 
 from utilities.decorators import singleton
 from utilities.typehints import InputBuffer
@@ -28,10 +27,6 @@ class Core:
 
     def __init__(self) -> None:
         self.scene_manager = SceneManager(Game)
-        self.debug_font = pygame.freetype.Font("assets/joystix.ttf", 10)
-        self.debug_font.antialiased = False
-        self.debug_font.fgcolor = (255, 255, 255)
-        self.debug_font.bgcolor = (0, 0, 0)
 
         theme_music = pygame.mixer.Sound("assets/hexagod.ogg")
         pygame.mixer.Channel(0).set_volume(0.5)
@@ -50,12 +45,6 @@ class Core:
             self.scene_manager.handle_input(input_buffer)
             self.scene_manager.update(dt)
             self.scene_manager.render(self.window)
-
-            # For easy performance testing
-            # self.debug_font.render_to(
-            #     self.window, (0, 0), f"FPS {self.clock.get_fps():.0f}"
-            # )
-            # self.debug_font.render_to(self.window, (0, 10), f"DT {dt}")
 
             pygame.display.flip()
 
